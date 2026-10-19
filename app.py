@@ -23,8 +23,9 @@ if uploaded_file is not None:
     st.image(image, caption="Imagen de entrada", use_container_width=True)
     
     with st.spinner("Procesando detección con YOLOv8..."):
-        # Se agrega iou=0.40 para eliminar cajas duplicadas sobre el mismo objeto
-        results = model(image, conf=conf_threshold, iou=0.40)
+        # Aumentar la resolución de entrada durante la detección permite a la red
+        # extraer con mayor nitidez pequeños detalles en botas y antiparras
+        results = model(image, conf=conf_threshold, imgsz=1280, iou=0.40)
         res_plotted = results[0].plot()
         res_rgb = res_plotted[:, :, ::-1]
         st.image(res_rgb, caption="Detección en tiempo real", use_container_width=True)
