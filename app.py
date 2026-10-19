@@ -4,7 +4,6 @@ import numpy as np
 from PIL import Image
 from ultralytics import YOLO
 import tempfile
-import time
 
 # Configuración de página
 st.set_page_config(
@@ -16,7 +15,7 @@ st.set_page_config(
 st.title("🛡️ SafeVR - Sistema de Monitoreo & Detección de EPP")
 st.markdown("Plataforma de visión por computadora para auditoría de Equipos de Protección Personal (EPP) en entornos industriales.")
 
-# Cargar modelo entrenado
+# Cargar modelo
 @st.cache_resource
 def load_model():
     return YOLO("best.pt")
@@ -27,8 +26,7 @@ except Exception as e:
     st.error(f"Error al cargar el modelo `best.pt`: {e}")
     st.stop()
 
-# Navegación por pestañas
-tab1, tab2 = st.tabs(["📸 Análisis de Imagen Estática", "🎥 Monitoreo CCTV / Video en Tiempo Real"])
+tab1, tab2 = st.tabs(["📸 Análisis de Imagen Estática", "🎥 Monitoreo CCTV / Video"])
 
 # ---------------------------------------------------------
 # PESTAÑA 1: IMAGEN ESTÁTICA
@@ -39,82 +37,76 @@ with tab1:
     col_ctrl, col_view = st.columns([1, 3])
     
     with col_ctrl:
-        st.markdown("### Parámetros de Inferencia")
-        conf_threshold = st.slider("Sensibilidad (Umbral de confianza)", 0.25, 0.90, 0.35, 0.05, 
-                                   help="Un umbral de 0.35 a 0.45 filtra falsos positivos y mantiene solo detecciones sólidas.")
-        iou_threshold = st.slider("Solapamiento (IoU)", 0.10, 0.80, 0.45, 0.05,
-                                  help="Filtra cajas redundantes o solapadas sobre el mismo objeto.")
-        
-        uploaded_file = st.file_uploader("Sube una imagen (JPG, PNG, JPEG)...", type=["jpg", "jpeg", "png"], key="img_uploader")
+        conf_threshold = st.slider("Sensibilidad (Umbral)", 0.20, 0.80, 0.30, 0.05)
+        iou_threshold = st.slider("Solapamiento (IoU)", 0.10, 0.80, 0.40, 0.05)
+        uploaded_file = st.file_uploader("Sube una imagen...", type=["jpg", "jpeg", "png"], key="img_up")
 
     with col_view:
         if uploaded_file is not None:
             image = Image.open(uploaded_file).convert("RGB")
             
-            # Inferencia a alta resolución (1280px) para rescatar detalles finos (botas, gafas)
-            results = model.predict(
-                source=image,
-                conf=conf_threshold,
-                iou=iou_threshold,
-                imgsz=1280
-            )
+            # Inferencia a resolución de 1024px para rescatar detalles
+            results = model.predict(source=image, conf=conf_threshold, iou=iou_threshold, imgsz=1024)
             
+            # Obtener imagen renderizada y convertir correctamente BGR -> RGB
             res_plotted = results[0].plot()
-            st.image(res_plotted, caption="Detección de EPP Filtrada y Optimizada", use_column_width=True)
+            res_rgb = cv2.cvtColor(res_plotted, cv2.COLOR_BGR2RGB)
             
-            # Conteo de objetos detectados
+            st.image(res_rgb, caption="Detección de EPP", use_column_width=True)
+            
+            # Métricas
             boxes = results[0].boxes
             if len(boxes) > 0:
-                st.markdown("#### Resumen de Objetos Detectados en Foto")
                 counts = {}
                 for box in boxes:
                     cls_id = int(box.cls[0])
                     class_name = model.names[cls_id]
                     counts[class_name] = counts.get(class_name, 0) + 1
                 
-                cols = st.columns(len(counts))
+                st.markdown("#### Objetos Detectados")
+                cols = st.columns(max(len(counts), 1))
                 for idx, (item, count) in enumerate(counts.items()):
                     cols[idx].metric(label=item.upper(), value=count)
-            else:
-                st.info("No se detectaron elementos con el umbral seleccionado.")
-        else:
-            st.info("Por favor, sube una imagen industrial para iniciar la inspección.")
 
 # ---------------------------------------------------------
-# PESTAÑA 2: VIDEO / SIMULACIÓN CCTV
+# PESTAÑA 2: VIDEO / CCTV
 # ---------------------------------------------------------
 with tab2:
-    st.subheader("Feed de Cámara de Seguridad (CCTV) / Clip Industrial")
-    st.markdown("Procesa videos en tiempo real analizando fotograma a fotograma el cumplimiento de normas SST.")
-    
-    video_file = st.file_uploader("Sube un video de inspección (MP4, AVI, MOV)...", type=["mp4", "avi", "mov"], key="vid_uploader")
-    
-    col_v1, col_v2 = st.columns([2, 1])
+    st.subheader("Feed CCTV / Procesamiento de Video")
+    video_file = st.file_uploader("Sube un video (MP4, AVI)...", type=["mp4", "avi", "mov"], key="vid_up")
     
     if video_file is not None:
         tfile = tempfile.NamedTemporaryFile(delete=False)
         tfile.write(video_file.read())
         cap = cv2.VideoCapture(tfile.name)
         
+        col_v1, col_v2 = st.columns([2, 1])
+        
+        # Elementos fijos de UI para evitar multiplicación de componentes
         st_frame = col_v1.empty()
-        st_metrics = col_v2.container()
+        st_status = col_v2.empty()
         
-        stop_btn = col_v2.button("Detener Procesamiento")
+        frame_count = 0
+        skip_frames = 3  # Procesar 1 de cada 3 cuadros para mayor fluidez
         
-        while cap.isOpened() and not stop_btn:
+        while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
                 break
             
-            # Detección sobre fotograma en tiempo real
-            results = model.predict(source=frame, conf=0.35, iou=0.45, imgsz=640)
+            frame_count += 1
+            if frame_count % skip_frames != 0:
+                continue
+            
+            # Inferencia sobre fotograma en resolución ligera
+            results = model.predict(source=frame, conf=0.30, iou=0.40, imgsz=640, verbose=False)
             annotated_frame = results[0].plot()
             
-            # Convertir BGR de OpenCV a RGB para Streamlit
-            annotated_frame_rgb = cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB)
-            st_frame.image(annotated_frame_rgb, channels="RGB", use_column_width=True)
+            # Corrección del espacio de color BGR -> RGB
+            annotated_rgb = cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB)
+            st_frame.image(annotated_rgb, channels="RGB", use_column_width=True)
             
-            # Métricas del fotograma actual
+            # Conteo de detecciones
             boxes = results[0].boxes
             counts = {}
             for box in boxes:
@@ -122,17 +114,17 @@ with tab2:
                 class_name = model.names[cls_id]
                 counts[class_name] = counts.get(class_name, 0) + 1
             
-            with st_metrics:
-                st.markdown("### Estado CCTV en Vivo")
-                st.metric("Cascos (`helmet`)", counts.get("helmet", 0))
-                st.metric("Chalecos (`vest`)", counts.get("vest", 0))
-                st.metric("Botas (`boots`)", counts.get("boots", 0))
-                st.metric("Gafas (`goggles`)", counts.get("goggles", 0))
+            # Renderizar estado en contenedor fijo
+            with st_status.container():
+                st.markdown("### Estado en Vivo")
+                st.write(f"👷 Cascos: **{counts.get('helmet', 0)}**")
+                st.write(f"🦺 Chalecos: **{counts.get('vest', 0)}**")
+                st.write(f"🥾 Botas: **{counts.get('boots', 0)}**")
+                st.write(f"🥽 Gafas: **{counts.get('goggles', 0)}**")
                 
-                # Alerta visual de infracción
                 if "no-helmet" in counts or "no-vest" in counts:
-                    st.error("🚨 ALERTA SST: ¡Infracción de EPP detectada en el Feed!")
+                    st.error("🚨 Infracción de EPP Detectada")
                 else:
-                    st.success("✅ Cumplimiento de EPP dentro de norma")
-        
+                    st.success("✅ EPP en Norma")
+                    
         cap.release()
