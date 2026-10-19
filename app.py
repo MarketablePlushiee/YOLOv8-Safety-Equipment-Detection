@@ -20,12 +20,12 @@ uploaded_file = st.file_uploader("Sube una imagen...", type=["jpg", "jpeg", "png
 if uploaded_file is not None:
     image = PIL.Image.open(uploaded_file)
     
-    # Inferencia optimizada con imgsz=640
     results = model.predict(
         source=image,
         conf=conf_thresh,
         iou=iou_thresh,
-        imgsz=640
+        imgsz=800,      # Aumenta el detalle para prendas no reflectantes o lejanas
+        augment=True    # Activa Test-Time Augmentation (TTA) para evaluar múltiples escalas
     )
     
     res_plotted = results[0].plot()
