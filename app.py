@@ -4,6 +4,7 @@ import PIL.Image
 from PIL import ImageDraw, ImageFont
 import numpy as np
 import pandas as pd
+import gc
 
 # Configuración de página
 st.set_page_config(page_title="SST Vision - Auditoría de EPP", layout="wide")
@@ -11,11 +12,15 @@ st.title("🛡️ SST Vision - Sistema de Auditoría & Monitoreo de EPP")
 
 @st.cache_resource
 def load_model():
-    return YOLO("best.pt")
+    try:
+        return YOLO("best.pt")
+    except Exception as e:
+        st.error(f"Error al cargar el modelo 'best.pt': {e}")
+        return None
 
 model = load_model()
 
-# Paleta de colores RGB oficial por clase (Industrial & Alto Contraste)
+# Paleta de colores RGB oficial por clase
 CLASS_COLORS = {
     'helmet': (37, 99, 235),     # Azul Eléctrico
     'vest': (249, 115, 22),      # Naranja Reflectante EPP
@@ -24,7 +29,6 @@ CLASS_COLORS = {
     'goggles': (139, 92, 246)    # Morado / Violeta
 }
 
-# Función auxiliar para calcular Intersection over Union (IoU)
 def compute_iou(boxA, boxB):
     xA = max(boxA[0], boxB[0])
     yA = max(boxA[1], boxB[1])
@@ -35,7 +39,6 @@ def compute_iou(boxA, boxB):
     boxBArea = max(1, (boxB[2] - boxB[0]) * (boxB[3] - boxB[1]))
     return interArea / float(boxAArea + boxBArea - interArea + 1e-6)
 
-# Dibujador nativo RGB
 def draw_custom_boxes(img_np, detections, class_colors):
     img_pil = PIL.Image.fromarray(img_np).convert("RGBA")
     overlay = PIL.Image.new("RGBA", img_pil.size, (255, 255, 255, 0))
@@ -75,9 +78,10 @@ def draw_custom_boxes(img_np, detections, class_colors):
 # Sidebar
 st.sidebar.header("⚙️ Configuración de Inferencia")
 
+# Desactivado por defecto para estabilidad de memoria RAM en Streamlit Cloud
 use_sahi = st.sidebar.checkbox(
     "🔬 Activar Modo Gigapixel SAHI (Fotos de alta resolución)", 
-    value=True,
+    value=False,
     help="Divide la imagen en recortes de 480x480 para accesorios pequeños a gran distancia."
 )
 
@@ -98,7 +102,7 @@ use_tta = st.sidebar.checkbox("Modo TTA (Multiescala)", value=True)
 
 uploaded_file = st.file_uploader("Subir fotografía de inspección industrial...", type=["jpg", "jpeg", "png"])
 
-if uploaded_file is not None:
+if uploaded_file is not None and model is not None:
     image = PIL.Image.open(uploaded_file).convert("RGB")
     img_np = np.array(image)
     img_height = img_np.shape[0]
@@ -133,6 +137,8 @@ if uploaded_file is not None:
                     'class': pred.category.name,
                     'score': pred.score.value
                 })
+            del detection_model, sahi_res
+            gc.collect()
         except Exception as e:
             st.sidebar.error(f"Aviso SAHI: {e}. Usando YOLO estándar.")
             results = model.predict(source=image, conf=0.02, iou=iou_thresh, imgsz=1024, augment=use_tta, agnostic_nms=True)
