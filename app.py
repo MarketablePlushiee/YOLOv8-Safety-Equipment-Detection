@@ -24,6 +24,18 @@ CLASS_COLORS = {
     'goggles': (139, 92, 246)    # Morado / Violeta
 }
 
+# Función auxiliar para calcular Intersection over Union (IoU)
+def compute_iou(boxA, boxB):
+    xA = max(boxA[0], boxB[0])
+    yA = max(boxA[1], boxB[1])
+    xB = min(boxA[2], boxB[2])
+    yB = min(boxA[3], boxB[3])
+    interArea = max(0, xB - xA) * max(0, yB - yA)
+    boxAArea = max(1, (boxA[2] - boxA[0]) * (boxA[3] - boxA[1]))
+    boxBArea = max(1, (boxB[2] - boxB[0]) * (boxB[3] - boxB[1]))
+    return interArea / float(boxAArea + boxBArea - interArea + 1e-6)
+
+# Dibujador nativo RGB
 def draw_custom_boxes(img_np, detections, class_colors):
     img_pil = PIL.Image.fromarray(img_np).convert("RGBA")
     overlay = PIL.Image.new("RGBA", img_pil.size, (255, 255, 255, 0))
@@ -60,6 +72,7 @@ def draw_custom_boxes(img_np, detections, class_colors):
     combined = PIL.Image.alpha_composite(img_pil, overlay).convert("RGB")
     return np.array(combined)
 
+# Sidebar
 st.sidebar.header("⚙️ Configuración de Inferencia")
 
 use_sahi = st.sidebar.checkbox(
@@ -71,7 +84,7 @@ use_sahi = st.sidebar.checkbox(
 ignore_distant = st.sidebar.checkbox(
     "👥 Ignorar personas lejanas en Auditoría SST", 
     value=True,
-    help="Excluye cascos lejanos en el fondo para evitar falsas alarmas."
+    help="Excluye cascos pequeños en el fondo lejano para evitar falsas alarmas por distancia."
 )
 
 auto_mode = st.sidebar.checkbox("🤖 Sensibilidad Automática Adaptativa (Por Foto)", value=True)
@@ -92,7 +105,7 @@ if uploaded_file is not None:
     
     all_detections = []
     
-    # 1. Inferencia SAHI ajustada a parches de 480px
+    # 1. Inferencia
     if use_sahi:
         try:
             from sahi import AutoDetectionModel
@@ -121,7 +134,7 @@ if uploaded_file is not None:
                     'score': pred.score.value
                 })
         except Exception as e:
-            st.sidebar.error(f"Error SAHI: {e}. Usando YOLO nativo.")
+            st.sidebar.error(f"Aviso SAHI: {e}. Usando YOLO estándar.")
             results = model.predict(source=image, conf=0.02, iou=iou_thresh, imgsz=1024, augment=use_tta, agnostic_nms=True)
             res = results[0]
             for box in res.boxes:
@@ -140,7 +153,7 @@ if uploaded_file is not None:
                 'score': float(box.conf[0])
             })
             
-    # 2. Lógica de Umbrales Adaptativos por Imagen
+    # 2. Umbrales Adaptativos
     if auto_mode:
         floors = {'helmet': 0.10, 'vest': 0.08, 'boots': 0.03, 'gloves': 0.02, 'goggles': 0.03}
         max_scores = {k: 0.0 for k in floors.keys()}
@@ -161,30 +174,49 @@ if uploaded_file is not None:
             'boots': conf_small_user, 'gloves': conf_small_user, 'goggles': conf_small_user
         }
 
-    # 3. Filtrado por Consistencia Anatómica Espacial
-    valid_detections = []
-    helmet_boxes = []
-    vest_boxes = []
+    # 3. Filtrado con Regla de Exclusión Mutua (Mano vs Bota)
+    candidate_detections = []
+    glove_boxes = []
     
     for det in all_detections:
         c_name = det['class']
         score = det['score']
         target_thresh = class_thresholds.get(c_name, 0.03)
-        
         if score >= target_thresh:
-            x1, y1, x2, y2 = det['xyxy']
-            
-            # Descarta bota falsa ubicada en el 45% superior de la foto si su confianza es baja
-            if c_name == 'boots' and (y1 < img_height * 0.45) and score < 0.60:
+            candidate_detections.append(det)
+            if c_name == 'gloves':
+                glove_boxes.append(det['xyxy'])
+
+    valid_detections = []
+    helmet_boxes = []
+    vest_boxes = []
+
+    for det in candidate_detections:
+        c_name = det['class']
+        score = det['score']
+        xyxy = det['xyxy']
+        
+        # Elimina falsos positivos de botas sobre las manos
+        if c_name == 'boots':
+            is_glove_conflict = False
+            for g_xyxy in glove_boxes:
+                if compute_iou(xyxy, g_xyxy) > 0.10:
+                    is_glove_conflict = True
+                    break
+            if is_glove_conflict:
                 continue
                 
-            valid_detections.append(det)
-            if c_name == 'helmet':
-                helmet_boxes.append((det['xyxy'], score))
-            elif c_name == 'vest':
-                vest_boxes.append((det['xyxy'], score))
+            # Filtro espacial por altura
+            if (xyxy[1] < img_height * 0.40) and score < 0.60:
+                continue
 
-    # 4. Auditoría de Cumplimiento SST
+        valid_detections.append(det)
+        if c_name == 'helmet':
+            helmet_boxes.append((xyxy, score))
+        elif c_name == 'vest':
+            vest_boxes.append((xyxy, score))
+
+    # 4. Auditoría de Cumplimiento SST (Umbral lejanía al 4.5%)
     compliant_count = 0
     infraction_count = 0
     ignored_distant = 0
@@ -194,7 +226,8 @@ if uploaded_file is not None:
         h_height = hy2 - hy1
         h_x_center = (hx1 + hx2) / 2.0
         
-        if ignore_distant and (h_height < img_height * 0.025):
+        # Umbral ajustado a 4.5% de la altura de la foto
+        if ignore_distant and (h_height < img_height * 0.045):
             ignored_distant += 1
             continue
             
