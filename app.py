@@ -6,8 +6,46 @@ import numpy as np
 import pandas as pd
 
 # Configuración de página
-st.set_page_config(page_title="SST Vision - Auditoría de EPP", layout="wide")
-st.title("🛡️ SST Vision - Sistema de Auditoría & Monitoreo de EPP")
+st.set_page_config(
+    page_title="Sistema de Auditoría & Monitoreo de EPP",
+    page_icon="🛡️",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# Estilos CSS personalizados para mejorar la interfaz y accesibilidad
+st.markdown("""
+    <style>
+    .main .block-container {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
+    .stMetric {
+        background-color: #1e293b;
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid #334155;
+    }
+    .stAlert {
+        border-radius: 8px;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# Encabezado principal limpio
+st.title("🛡️ Sistema de Auditoría & Monitoreo de EPP")
+st.caption("Detección automatizada de Equipos de Protección Personal mediante Visión por Computadora (YOLOv8 + SAHI)")
+
+# Guía accesible para el usuario
+with st.expander("ℹ️ Instrucciones de uso y guía de la aplicación"):
+    st.markdown("""
+    1. **Cargar Imagen:** Sube una fotografía de inspección industrial (`.jpg`, `.jpeg`, `.png`).
+    2. **Configuración Lateral:**
+       * **Modo SAHI:** Actívalo para fotografías de alta resolución con trabajadores a gran distancia o elementos pequeños (guantes, gafas).
+       * **Filtrado por Distancia:** Ignora automáticamente personas en el fondo lejano para evitar falsos positivos en la auditoría.
+       * **Sensibilidad Adaptativa:** Ajusta dinámicamente los umbrales de confianza según el nivel de detalle de la toma.
+    3. **Resultados:** Revisa la imagen anotada, el estado de cumplimiento SST y descarga el informe en formato CSV.
+    """)
 
 @st.cache_resource
 def load_model():
@@ -15,7 +53,7 @@ def load_model():
 
 model = load_model()
 
-# Paleta de colores RGB oficial por clase (Industrial & Alto Contraste)
+# Paleta de colores RGB de alto contraste
 CLASS_COLORS = {
     'helmet': (37, 99, 235),     # Azul Eléctrico
     'vest': (249, 115, 22),      # Naranja Reflectante EPP
@@ -24,7 +62,6 @@ CLASS_COLORS = {
     'goggles': (139, 92, 246)    # Morado / Violeta
 }
 
-# Función auxiliar para calcular Intersection over Union (IoU)
 def compute_iou(boxA, boxB):
     xA = max(boxA[0], boxB[0])
     yA = max(boxA[1], boxB[1])
@@ -35,7 +72,6 @@ def compute_iou(boxA, boxB):
     boxBArea = max(1, (boxB[2] - boxB[0]) * (boxB[3] - boxB[1]))
     return interArea / float(boxAArea + boxBArea - interArea + 1e-6)
 
-# Dibujador nativo RGB
 def draw_custom_boxes(img_np, detections, class_colors):
     img_pil = PIL.Image.fromarray(img_np).convert("RGBA")
     overlay = PIL.Image.new("RGBA", img_pil.size, (255, 255, 255, 0))
@@ -43,7 +79,7 @@ def draw_custom_boxes(img_np, detections, class_colors):
     
     try:
         font = ImageFont.truetype("arial.ttf", 15)
-    except:
+    except Exception:
         font = ImageFont.load_default()
 
     for det in detections:
@@ -72,7 +108,7 @@ def draw_custom_boxes(img_np, detections, class_colors):
     combined = PIL.Image.alpha_composite(img_pil, overlay).convert("RGB")
     return np.array(combined)
 
-# Sidebar
+# Sidebar de Configuración
 st.sidebar.header("⚙️ Configuración de Inferencia")
 
 use_sahi = st.sidebar.checkbox(
@@ -105,7 +141,6 @@ if uploaded_file is not None:
     
     all_detections = []
     
-    # 1. Inferencia
     if use_sahi:
         try:
             from sahi import AutoDetectionModel
@@ -153,7 +188,6 @@ if uploaded_file is not None:
                 'score': float(box.conf[0])
             })
             
-    # 2. Umbrales Adaptativos
     if auto_mode:
         floors = {'helmet': 0.10, 'vest': 0.08, 'boots': 0.03, 'gloves': 0.02, 'goggles': 0.03}
         max_scores = {k: 0.0 for k in floors.keys()}
@@ -174,7 +208,6 @@ if uploaded_file is not None:
             'boots': conf_small_user, 'gloves': conf_small_user, 'goggles': conf_small_user
         }
 
-    # 3. Filtrado con Regla de Exclusión Mutua (Mano vs Bota)
     candidate_detections = []
     glove_boxes = []
     
@@ -196,7 +229,6 @@ if uploaded_file is not None:
         score = det['score']
         xyxy = det['xyxy']
         
-        # Elimina falsos positivos de botas sobre las manos
         if c_name == 'boots':
             is_glove_conflict = False
             for g_xyxy in glove_boxes:
@@ -206,7 +238,6 @@ if uploaded_file is not None:
             if is_glove_conflict:
                 continue
                 
-            # Filtro espacial por altura
             if (xyxy[1] < img_height * 0.40) and score < 0.60:
                 continue
 
@@ -216,7 +247,6 @@ if uploaded_file is not None:
         elif c_name == 'vest':
             vest_boxes.append((xyxy, score))
 
-    # 4. Auditoría de Cumplimiento SST (Umbral lejanía al 4.5%)
     compliant_count = 0
     infraction_count = 0
     ignored_distant = 0
@@ -226,7 +256,6 @@ if uploaded_file is not None:
         h_height = hy2 - hy1
         h_x_center = (hx1 + hx2) / 2.0
         
-        # Umbral ajustado a 4.5% de la altura de la foto
         if ignore_distant and (h_height < img_height * 0.045):
             ignored_distant += 1
             continue
@@ -250,7 +279,6 @@ if uploaded_file is not None:
         else:
             infraction_count += 1
 
-    # 5. Visualización
     col1, col2 = st.columns([3, 1])
     
     with col1:
