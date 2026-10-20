@@ -1,6 +1,8 @@
 import streamlit as st
 from ultralytics import YOLO
 import PIL.Image
+import cv2
+import numpy as np
 import pandas as pd
 
 # Configuración de página
@@ -14,10 +16,9 @@ def load_model():
 
 model = load_model()
 
-# Panel de control
+# Panel de control lateral
 st.sidebar.header("⚙️ Configuración de Inferencia")
 
-# Opción SAHI (Desactivada por defecto)
 use_sahi = st.sidebar.checkbox(
     "🔬 Activar Modo Gigapixel SAHI (Fotos de alta resolución)", 
     value=False,
@@ -27,7 +28,6 @@ use_sahi = st.sidebar.checkbox(
 if use_sahi:
     st.sidebar.warning("⚠️ Modo SAHI activo: El procesamiento puede tomar unos segundos adicionales.")
 
-# Sensibilidad Adaptativa por defecto
 auto_mode = st.sidebar.checkbox("🤖 Sensibilidad Automática Adaptativa (Por Foto)", value=True)
 
 if not auto_mode:
@@ -40,9 +40,10 @@ use_tta = st.sidebar.checkbox("Modo TTA (Multiescala)", value=True)
 uploaded_file = st.file_uploader("Subir fotografía de inspección industrial...", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
+    # 1. Cargar imagen original en formato RGB puro para la IA
     image = PIL.Image.open(uploaded_file).convert("RGB")
     
-    # Inferencia estándar YOLO
+    # 2. Inferencia: La IA analiza los colores REALES y NATURALES
     results = model.predict(
         source=image,
         conf=0.03,
@@ -55,9 +56,9 @@ if uploaded_file is not None:
     res = results[0]
     boxes = res.boxes
     
-    # Lógica de Umbrales Adaptativos por Imagen
+    # 3. Lógica de Umbrales Adaptativos
     if auto_mode:
-        floors = {'helmet': 0.12, 'vest': 0.10, 'boots': 0.05, 'gloves': 0.04, 'goggles': 0.04}
+        floors = {'helmet': 0.12, 'vest': 0.08, 'boots': 0.05, 'gloves': 0.04, 'goggles': 0.04}
         max_scores = {k: 0.0 for k in floors.keys()}
         for box in boxes:
             c_name = res.names[int(box.cls[0])]
@@ -77,7 +78,7 @@ if uploaded_file is not None:
             'boots': conf_small_user, 'gloves': conf_small_user, 'goggles': conf_small_user
         }
 
-    # Filtrar detecciones válidas
+    # 4. Filtrar detecciones
     valid_indices = []
     helmet_boxes = []
     vest_boxes = []
@@ -98,7 +99,7 @@ if uploaded_file is not None:
             
     filtered_res = res[valid_indices]
     
-    # Motor de Cumplimiento SST
+    # 5. Motor de Cumplimiento SST
     compliant_count = 0
     infraction_count = 0
     
@@ -118,12 +119,14 @@ if uploaded_file is not None:
         else:
             infraction_count += 1
 
-    # Renderizado Nativo (Colores de caja originales: Rojo/Amarillo/Marrón)
+    # 6. Renderizado: Se convierte de BGR a RGB para corregir el tono de la piel en pantalla
     col1, col2 = st.columns([3, 1])
     
     with col1:
-        res_plotted = filtered_res.plot()
-        st.image(res_plotted, caption="Detección de Equipos de Protección Personal", use_container_width=True)
+        res_plotted_bgr = filtered_res.plot()
+        # Conversión que restaura los colores humanos normales para el usuario
+        res_plotted_rgb = cv2.cvtColor(res_plotted_bgr, cv2.COLOR_BGR2RGB)
+        st.image(res_plotted_rgb, caption="Detección de Equipos de Protección Personal", use_container_width=True)
         
     with col2:
         st.subheader("📊 Auditoría de Cumplimiento SST")
