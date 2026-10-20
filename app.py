@@ -114,7 +114,7 @@ if uploaded_file is not None:
             detection_model = AutoDetectionModel.from_pretrained(
                 model_type='yolov8',
                 model_path='best.pt',
-                confidence_threshold=0.02,
+                confidence_threshold=0.015, # RETOQUE 1: Bajado a 0.015 para capturar guantes difíciles
                 device='cpu'
             )
             sahi_res = get_sliced_prediction(
@@ -135,7 +135,7 @@ if uploaded_file is not None:
                 })
         except Exception as e:
             st.sidebar.error(f"Aviso SAHI: {e}. Usando YOLO estándar.")
-            results = model.predict(source=image, conf=0.02, iou=iou_thresh, imgsz=1024, augment=use_tta, agnostic_nms=True)
+            results = model.predict(source=image, conf=0.015, iou=iou_thresh, imgsz=1024, augment=use_tta, agnostic_nms=True)
             res = results[0]
             for box in res.boxes:
                 all_detections.append({
@@ -144,7 +144,7 @@ if uploaded_file is not None:
                     'score': float(box.conf[0])
                 })
     else:
-        results = model.predict(source=image, conf=0.02, iou=iou_thresh, imgsz=1024, augment=use_tta, agnostic_nms=True)
+        results = model.predict(source=image, conf=0.015, iou=iou_thresh, imgsz=1024, augment=use_tta, agnostic_nms=True)
         res = results[0]
         for box in res.boxes:
             all_detections.append({
@@ -155,7 +155,7 @@ if uploaded_file is not None:
             
     # 2. Umbrales Adaptativos
     if auto_mode:
-        floors = {'helmet': 0.10, 'vest': 0.08, 'boots': 0.03, 'gloves': 0.02, 'goggles': 0.03}
+        floors = {'helmet': 0.10, 'vest': 0.08, 'boots': 0.03, 'gloves': 0.015, 'goggles': 0.03} # RETOQUE 2: Piso de guantes a 0.015
         max_scores = {k: 0.0 for k in floors.keys()}
         for det in all_detections:
             c_name = det['class']
@@ -174,18 +174,21 @@ if uploaded_file is not None:
             'boots': conf_small_user, 'gloves': conf_small_user, 'goggles': conf_small_user
         }
 
-    # 3. Filtrado con Regla de Exclusión Mutua (Mano vs Bota)
+    # 3. Filtrado con Regla de Exclusión Mutua y Torso
     candidate_detections = []
     glove_boxes = []
+    vest_boxes_raw = []
     
     for det in all_detections:
         c_name = det['class']
         score = det['score']
-        target_thresh = class_thresholds.get(c_name, 0.03)
+        target_thresh = class_thresholds.get(c_name, 0.02)
         if score >= target_thresh:
             candidate_detections.append(det)
             if c_name == 'gloves':
                 glove_boxes.append(det['xyxy'])
+            elif c_name == 'vest':
+                vest_boxes_raw.append(det['xyxy'])
 
     valid_detections = []
     helmet_boxes = []
@@ -198,15 +201,26 @@ if uploaded_file is not None:
         
         # Elimina falsos positivos de botas sobre las manos
         if c_name == 'boots':
+            # Regla A: Conflicto directo con guante
             is_glove_conflict = False
             for g_xyxy in glove_boxes:
-                if compute_iou(xyxy, g_xyxy) > 0.10:
+                if compute_iou(xyxy, g_xyxy) > 0.05:
                     is_glove_conflict = True
                     break
             if is_glove_conflict:
                 continue
                 
-            # Filtro espacial por altura
+            # Regla B: Bota de baja confianza superpuesta sobre el torso/chaleco (falsa bota en mano)
+            is_torso_conflict = False
+            boot_center_y = (xyxy[1] + xyxy[3]) / 2.0
+            for v_box in vest_boxes_raw:
+                if (v_box[1] <= boot_center_y <= v_box[3] + 30) and score < 0.35:
+                    is_torso_conflict = True
+                    break
+            if is_torso_conflict:
+                continue
+                
+            # Regla C: Filtro espacial por altura superior
             if (xyxy[1] < img_height * 0.40) and score < 0.60:
                 continue
 
