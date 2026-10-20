@@ -13,9 +13,10 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Estilos CSS personalizados
+# Estilos CSS personalizados para destacar la sección de idioma
 st.markdown("""
     <style>
+    /* Estilos generales */
     .main .block-container {
         padding-top: 2rem;
         padding-bottom: 2rem;
@@ -26,8 +27,27 @@ st.markdown("""
         border-radius: 8px;
         border: 1px solid #334155;
     }
-    .stAlert {
-        border-radius: 8px;
+    
+    /* Destacar caja de idioma en el Sidebar */
+    div[data-testid="stSidebarUserContent"] div.stRadio > label {
+        font-size: 1.15rem !important;
+        font-weight: 700 !important;
+        color: #38bdf8 !important;
+    }
+    
+    /* Contenedor tipo tarjeta destacada para el idioma */
+    div[data-testid="stSidebar"] div.stElementContainer:has(div.stRadio) {
+        background-color: #1e293b;
+        padding: 14px;
+        border-radius: 10px;
+        border: 2px solid #38bdf8;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Aumentar texto de opciones de radio en el sidebar */
+    div[data-testid="stSidebar"] label[data-baseweb="radio"] div {
+        font-size: 1.1rem !important;
+        font-weight: 600 !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -46,7 +66,7 @@ TEXTS = {
         'guide_2b': "   * **Filtrado por Distancia:** Ignora automáticamente personas en el fondo lejano para evitar falsos positivos en la auditoría.",
         'guide_2c': "   * **Sensibilidad Adaptativa:** Ajusta dinámicamente los umbrales de confianza según el nivel de detalle de la toma.",
         'guide_3': "3. **Resultados:** Revisa la imagen anotada, el estado de cumplimiento SST y descarga el informe en formato CSV.",
-        'sidebar_lang': "🌐 Idioma / Language",
+        'sidebar_lang': "🌐 LANGUAGE / IDIOMA",
         'sidebar_config': "⚙️ Configuración de Inferencia",
         'sahi_label': "🔬 Activar Modo Gigapixel SAHI (Fotos de alta resolución)",
         'sahi_help': "Divide la imagen en recortes de 480x480 para accesorios pequeños a gran distancia.",
@@ -85,7 +105,7 @@ TEXTS = {
         'guide_2b': "   * **Distance Filtering:** Automatically ignores background individuals to prevent false positives.",
         'guide_2c': "   * **Adaptive Sensitivity:** Dynamically adjusts confidence thresholds based on image detail.",
         'guide_3': "3. **Results:** Review annotated image, OHS compliance status, and download the CSV report.",
-        'sidebar_lang': "🌐 Language / Idioma",
+        'sidebar_lang': "🌐 LANGUAGE / IDIOMA",
         'sidebar_config': "⚙️ Inference Settings",
         'sahi_label': "🔬 Enable Gigapixel SAHI Mode (High-res photos)",
         'sahi_help': "Slices the image into 480x480 tiles for small objects at long distances.",
@@ -117,9 +137,15 @@ TEXTS = {
 }
 
 # ---------------------------------------------------------
-# SIDEBAR - SELECTOR DE IDIOMA
+# SIDEBAR - SELECTOR DE IDIOMA DESTACADO
 # ---------------------------------------------------------
-lang_choice = st.sidebar.radio("🌐 Language / Idioma", ["Español", "English"], index=0)
+lang_choice = st.sidebar.radio(
+    "🌐 LANGUAGE / IDIOMA", 
+    ["Español", "English"], 
+    index=0,
+    horizontal=True
+)
+
 lang_key = 'ES' if lang_choice == "Español" else 'EN'
 t = TEXTS[lang_key]
 
