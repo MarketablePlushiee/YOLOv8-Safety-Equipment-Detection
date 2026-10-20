@@ -1,8 +1,6 @@
 import streamlit as st
 from ultralytics import YOLO
 import PIL.Image
-import cv2
-import numpy as np
 import pandas as pd
 
 # Configuración de página
@@ -23,18 +21,18 @@ st.sidebar.header("⚙️ Configuración de Inferencia")
 use_sahi = st.sidebar.checkbox(
     "🔬 Activar Modo Gigapixel SAHI (Fotos de alta resolución)", 
     value=False,
-    help="Divide la imagen en múltiples recortes de 640x640 para capturar accesorios pequeños a gran distancia. NOTA: Aumentará sensiblemente el tiempo de carga/inferencia."
+    help="Divide la imagen en recortes de 640x640 para accesorios pequeños a gran distancia."
 )
 
 if use_sahi:
-    st.sidebar.warning("⚠️ Modo SAHI activo: El procesamiento puede tomar de 6 a 10 segundos por imagen en servidor web.")
+    st.sidebar.warning("⚠️ Modo SAHI activo: El procesamiento puede tomar unos segundos adicionales.")
 
 # Sensibilidad Adaptativa por defecto
 auto_mode = st.sidebar.checkbox("🤖 Sensibilidad Automática Adaptativa (Por Foto)", value=True)
 
 if not auto_mode:
-    conf_general_user = st.sidebar.slider("Sensibilidad Cascos / Chalecos", 0.10, 0.80, 0.25, 0.05)
-    conf_small_user = st.sidebar.slider("Sensibilidad Botas / Accesorios", 0.01, 0.50, 0.10, 0.01)
+    conf_general_user = st.sidebar.slider("Sensibilidad Cascos / Chalecos", 0.05, 0.80, 0.15, 0.05)
+    conf_small_user = st.sidebar.slider("Sensibilidad Botas / Accesorios", 0.01, 0.50, 0.05, 0.01)
 
 iou_thresh = st.sidebar.slider("Solapamiento (IoU)", 0.10, 0.80, 0.30, 0.05)
 use_tta = st.sidebar.checkbox("Modo TTA (Multiescala)", value=True)
@@ -43,49 +41,23 @@ uploaded_file = st.file_uploader("Subir fotografía de inspección industrial...
 
 if uploaded_file is not None:
     image = PIL.Image.open(uploaded_file).convert("RGB")
-    img_np = np.array(image)
     
-    # 1. Inferencia (SAHI o YOLO Estándar)
-    if use_sahi:
-        try:
-            from sahi import AutoDetectionModel
-            from sahi.predict import get_sliced_prediction
-            
-            detection_model = AutoDetectionModel.from_pretrained(
-                model_type='yolov8',
-                model_path='best.pt',
-                confidence_threshold=0.08,
-                device='cpu'
-            )
-            sahi_res = get_sliced_prediction(
-                img_np,
-                detection_model,
-                slice_height=640,
-                slice_width=640,
-                overlap_height_ratio=0.2,
-                overlap_width_ratio=0.2
-            )
-            # Convertir formato SAHI a Ultralytics para graficar
-            results = model.predict(source=image, conf=0.05, iou=iou_thresh, imgsz=1024, augment=use_tta, agnostic_nms=True)
-        except Exception as e:
-            st.sidebar.error(f"Aviso SAHI: Instala `sahi` en requirements.txt para habilitar este modo. Usando YOLO estándar.")
-            results = model.predict(source=image, conf=0.03, iou=iou_thresh, imgsz=1024, augment=use_tta, agnostic_nms=True)
-    else:
-        results = model.predict(
-            source=image,
-            conf=0.03,
-            iou=iou_thresh,
-            imgsz=1024,
-            augment=use_tta,
-            agnostic_nms=True
-        )
+    # Inferencia estándar YOLO
+    results = model.predict(
+        source=image,
+        conf=0.03,
+        iou=iou_thresh,
+        imgsz=1024,
+        augment=use_tta,
+        agnostic_nms=True
+    )
     
     res = results[0]
     boxes = res.boxes
     
-    # 2. Lógica de Umbrales Adaptativos por Imagen
+    # Lógica de Umbrales Adaptativos por Imagen
     if auto_mode:
-        floors = {'helmet': 0.15, 'vest': 0.15, 'boots': 0.05, 'gloves': 0.04, 'goggles': 0.04}
+        floors = {'helmet': 0.12, 'vest': 0.10, 'boots': 0.05, 'gloves': 0.04, 'goggles': 0.04}
         max_scores = {k: 0.0 for k in floors.keys()}
         for box in boxes:
             c_name = res.names[int(box.cls[0])]
@@ -96,7 +68,7 @@ if uploaded_file is not None:
         class_thresholds = {}
         for c_name, floor_val in floors.items():
             if max_scores[c_name] > 0:
-                class_thresholds[c_name] = max(floor_val, min(max_scores[c_name] * 0.35, 0.25))
+                class_thresholds[c_name] = max(floor_val, min(max_scores[c_name] * 0.35, 0.20))
             else:
                 class_thresholds[c_name] = floor_val
     else:
@@ -105,7 +77,7 @@ if uploaded_file is not None:
             'boots': conf_small_user, 'gloves': conf_small_user, 'goggles': conf_small_user
         }
 
-    # 3. Filtrar detecciones válidas
+    # Filtrar detecciones válidas
     valid_indices = []
     helmet_boxes = []
     vest_boxes = []
@@ -115,7 +87,7 @@ if uploaded_file is not None:
         score = float(box.conf[0])
         class_name = res.names[cls_id]
         
-        target_thresh = class_thresholds.get(class_name, 0.10)
+        target_thresh = class_thresholds.get(class_name, 0.08)
         if score >= target_thresh:
             valid_indices.append(idx)
             xyxy = box.xyxy[0].cpu().numpy()
@@ -126,7 +98,7 @@ if uploaded_file is not None:
             
     filtered_res = res[valid_indices]
     
-    # 4. MOTOR DE CUMPLIMIENTO SST (Compliance Engine)
+    # Motor de Cumplimiento SST
     compliant_count = 0
     infraction_count = 0
     
@@ -137,8 +109,7 @@ if uploaded_file is not None:
         has_vest = False
         for v_box in vest_boxes:
             v_x1, v_y1, v_x2, v_y2 = v_box[0], v_box[1], v_box[2], v_box[3]
-            # Verificar alineación horizontal y si el chaleco está debajo del casco
-            if (v_x1 <= h_x_center <= v_x2) and (v_y1 >= h_y2 - 60 or v_y2 >= h_y2):
+            if (v_x1 <= h_x_center <= v_x2) and (v_y1 >= h_y2 - 80 or v_y2 >= h_y2):
                 has_vest = True
                 break
                 
@@ -147,19 +118,16 @@ if uploaded_file is not None:
         else:
             infraction_count += 1
 
-    # 5. Renderizado con Corrección de Color BGR a RGB
+    # Renderizado Nativo (Colores de caja originales: Rojo/Amarillo/Marrón)
     col1, col2 = st.columns([3, 1])
     
     with col1:
         res_plotted = filtered_res.plot()
-        # ¡CORRECCIÓN CRUCIAL DE COLOR!: BGR -> RGB para eliminar piel azul
-        res_plotted_rgb = cv2.cvtColor(res_plotted, cv2.COLOR_BGR2RGB)
-        st.image(res_plotted_rgb, caption="Detección de EPP - Colores Normalizados RGB", use_container_width=True)
+        st.image(res_plotted, caption="Detección de Equipos de Protección Personal", use_container_width=True)
         
     with col2:
         st.subheader("📊 Auditoría de Cumplimiento SST")
         
-        # Panel de Estado de Cumplimiento
         if infraction_count > 0:
             st.error(f"🚨 ALERTA DE SEGURIDAD\n\nSe detectaron **{infraction_count} trabajador(es)** sin chaleco de seguridad.")
         else:
