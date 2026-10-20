@@ -7,13 +7,13 @@ import pandas as pd
 
 # Configuración de página
 st.set_page_config(
-    page_title="Sistema de Auditoría & Monitoreo de EPP",
+    page_title="PPE Audit & Monitoring System",
     page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Estilos CSS personalizados para mejorar la interfaz y accesibilidad
+# Estilos CSS personalizados
 st.markdown("""
     <style>
     .main .block-container {
@@ -32,20 +32,103 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Encabezado principal limpio
-st.title("🛡️ Sistema de Auditoría & Monitoreo de EPP")
-st.caption("Detección automatizada de Equipos de Protección Personal mediante Visión por Computadora (YOLOv8 + SAHI)")
+# ---------------------------------------------------------
+# DICCIONARIO DE INTERNACIONALIZACIÓN (i18n)
+# ---------------------------------------------------------
+TEXTS = {
+    'ES': {
+        'page_title': "Sistema de Auditoría & Monitoreo de EPP",
+        'subtitle': "Detección automatizada de Equipos de Protección Personal mediante Visión por Computadora (YOLOv8 + SAHI)",
+        'expander_title': "ℹ️ Instrucciones de uso y guía de la aplicación",
+        'guide_1': "1. **Cargar Imagen:** Sube una fotografía de inspección industrial (`.jpg`, `.jpeg`, `.png`).",
+        'guide_2': "2. **Configuración Lateral:**",
+        'guide_2a': "   * **Modo SAHI:** Actívalo para fotografías de alta resolución con trabajadores a gran distancia o elementos pequeños (guantes, gafas).",
+        'guide_2b': "   * **Filtrado por Distancia:** Ignora automáticamente personas en el fondo lejano para evitar falsos positivos en la auditoría.",
+        'guide_2c': "   * **Sensibilidad Adaptativa:** Ajusta dinámicamente los umbrales de confianza según el nivel de detalle de la toma.",
+        'guide_3': "3. **Resultados:** Revisa la imagen anotada, el estado de cumplimiento SST y descarga el informe en formato CSV.",
+        'sidebar_lang': "🌐 Idioma / Language",
+        'sidebar_config': "⚙️ Configuración de Inferencia",
+        'sahi_label': "🔬 Activar Modo Gigapixel SAHI (Fotos de alta resolución)",
+        'sahi_help': "Divide la imagen en recortes de 480x480 para accesorios pequeños a gran distancia.",
+        'distant_label': "👥 Ignorar personas lejanas en Auditoría SST",
+        'distant_help': "Excluye cascos pequeños en el fondo lejano para evitar falsas alarmas por distancia.",
+        'auto_label': "🤖 Sensibilidad Automática Adaptativa (Por Foto)",
+        'slider_gen': "Sensibilidad Cascos / Chalecos",
+        'slider_small': "Sensibilidad Botas / Accesorios",
+        'iou_label': "Solapamiento (IoU)",
+        'tta_label': "Modo TTA (Multiescala)",
+        'upload_label': "Subir fotografía de inspección industrial...",
+        'sahi_error': "Aviso SAHI: {e}. Usando YOLO estándar.",
+        'audit_header': "📊 Auditoría de Cumplimiento SST",
+        'alert_danger': "🚨 ALERTA DE SEGURIDAD\n\nSe detectaron **{count} trabajador(es)** sin chaleco de seguridad.",
+        'alert_success': "🟢 CUMPLIMIENTO CORRECTO\n\nTodos los trabajadores evaluados portan chaleco y casco.",
+        'distant_notice': "ℹ️ {count} sujeto(s) lejanos excluidos por distancia.",
+        'count_header': "Conteo de EPP",
+        'download_btn': "📄 Descargar Informe Auditoría CSV",
+        'caption_img': "Detección de Equipos de Protección Personal",
+        'classes': {
+            'helmet': 'CASCOS',
+            'vest': 'CHALECOS',
+            'boots': 'BOTAS',
+            'gloves': 'GUANTES',
+            'goggles': 'GAFAS'
+        },
+        'csv_cols': ['Cascos', 'Chalecos', 'Botas', 'Guantes', 'Gafas', 'Conformes', 'Infracciones']
+    },
+    'EN': {
+        'page_title': "PPE Audit & Monitoring System",
+        'subtitle': "Automated Personal Protective Equipment Detection using Computer Vision (YOLOv8 + SAHI)",
+        'expander_title': "ℹ️ Usage Instructions & Application Guide",
+        'guide_1': "1. **Upload Image:** Upload an industrial inspection photograph (`.jpg`, `.jpeg`, `.png`).",
+        'guide_2': "2. **Sidebar Settings:**",
+        'guide_2a': "   * **SAHI Mode:** Enable it for high-resolution photos with distant workers or small items (gloves, goggles).",
+        'guide_2b': "   * **Distance Filtering:** Automatically ignores background individuals to prevent false positives.",
+        'guide_2c': "   * **Adaptive Sensitivity:** Dynamically adjusts confidence thresholds based on image detail.",
+        'guide_3': "3. **Results:** Review annotated image, OHS compliance status, and download the CSV report.",
+        'sidebar_lang': "🌐 Language / Idioma",
+        'sidebar_config': "⚙️ Inference Settings",
+        'sahi_label': "🔬 Enable Gigapixel SAHI Mode (High-res photos)",
+        'sahi_help': "Slices the image into 480x480 tiles for small objects at long distances.",
+        'distant_label': "👥 Ignore distant workers in OHS Audit",
+        'distant_help': "Excludes small helmets in the far background to prevent distance false alarms.",
+        'auto_label': "🤖 Adaptive Auto Sensitivity (Per Photo)",
+        'slider_gen': "Helmets / Vests Sensitivity",
+        'slider_small': "Boots / Accessories Sensitivity",
+        'iou_label': "Overlap (IoU)",
+        'tta_label': "TTA Mode (Multi-scale)",
+        'upload_label': "Upload industrial inspection photo...",
+        'sahi_error': "SAHI Notice: {e}. Falling back to standard YOLO.",
+        'audit_header': "📊 OHS Compliance Audit",
+        'alert_danger': "🚨 SAFETY ALERT\n\nDetected **{count} worker(s)** without safety vest.",
+        'alert_success': "🟢 FULL COMPLIANCE\n\nAll evaluated workers are wearing safety vest and helmet.",
+        'distant_notice': "ℹ️ {count} distant worker(s) excluded by distance threshold.",
+        'count_header': "PPE Count",
+        'download_btn': "📄 Download CSV Audit Report",
+        'caption_img': "Personal Protective Equipment Detection",
+        'classes': {
+            'helmet': 'HELMETS',
+            'vest': 'VESTS',
+            'boots': 'BOOTS',
+            'gloves': 'GLOVES',
+            'goggles': 'GOGGLES'
+        },
+        'csv_cols': ['Helmets', 'Vests', 'Boots', 'Gloves', 'Goggles', 'Compliant', 'Infractions']
+    }
+}
 
-# Guía accesible para el usuario
-with st.expander("ℹ️ Instrucciones de uso y guía de la aplicación"):
-    st.markdown("""
-    1. **Cargar Imagen:** Sube una fotografía de inspección industrial (`.jpg`, `.jpeg`, `.png`).
-    2. **Configuración Lateral:**
-       * **Modo SAHI:** Actívalo para fotografías de alta resolución con trabajadores a gran distancia o elementos pequeños (guantes, gafas).
-       * **Filtrado por Distancia:** Ignora automáticamente personas en el fondo lejano para evitar falsos positivos en la auditoría.
-       * **Sensibilidad Adaptativa:** Ajusta dinámicamente los umbrales de confianza según el nivel de detalle de la toma.
-    3. **Resultados:** Revisa la imagen anotada, el estado de cumplimiento SST y descarga el informe en formato CSV.
-    """)
+# ---------------------------------------------------------
+# SIDEBAR - SELECTOR DE IDIOMA
+# ---------------------------------------------------------
+lang_choice = st.sidebar.radio("🌐 Language / Idioma", ["Español", "English"], index=0)
+lang_key = 'ES' if lang_choice == "Español" else 'EN'
+t = TEXTS[lang_key]
+
+# Titulares dinámicos
+st.title(f"🛡️ {t['page_title']}")
+st.caption(t['subtitle'])
+
+with st.expander(t['expander_title']):
+    st.markdown(f"{t['guide_1']}\n{t['guide_2']}\n{t['guide_2a']}\n{t['guide_2b']}\n{t['guide_2c']}\n{t['guide_3']}")
 
 @st.cache_resource
 def load_model():
@@ -53,7 +136,6 @@ def load_model():
 
 model = load_model()
 
-# Paleta de colores RGB de alto contraste
 CLASS_COLORS = {
     'helmet': (37, 99, 235),     # Azul Eléctrico
     'vest': (249, 115, 22),      # Naranja Reflectante EPP
@@ -108,31 +190,31 @@ def draw_custom_boxes(img_np, detections, class_colors):
     combined = PIL.Image.alpha_composite(img_pil, overlay).convert("RGB")
     return np.array(combined)
 
-# Sidebar de Configuración
-st.sidebar.header("⚙️ Configuración de Inferencia")
+# Sidebar
+st.sidebar.header(t['sidebar_config'])
 
 use_sahi = st.sidebar.checkbox(
-    "🔬 Activar Modo Gigapixel SAHI (Fotos de alta resolución)", 
+    t['sahi_label'], 
     value=True,
-    help="Divide la imagen en recortes de 480x480 para accesorios pequeños a gran distancia."
+    help=t['sahi_help']
 )
 
 ignore_distant = st.sidebar.checkbox(
-    "👥 Ignorar personas lejanas en Auditoría SST", 
+    t['distant_label'], 
     value=True,
-    help="Excluye cascos pequeños en el fondo lejano para evitar falsas alarmas por distancia."
+    help=t['distant_help']
 )
 
-auto_mode = st.sidebar.checkbox("🤖 Sensibilidad Automática Adaptativa (Por Foto)", value=True)
+auto_mode = st.sidebar.checkbox(t['auto_label'], value=True)
 
 if not auto_mode:
-    conf_general_user = st.sidebar.slider("Sensibilidad Cascos / Chalecos", 0.05, 0.80, 0.15, 0.05)
-    conf_small_user = st.sidebar.slider("Sensibilidad Botas / Accesorios", 0.01, 0.50, 0.03, 0.01)
+    conf_general_user = st.sidebar.slider(t['slider_gen'], 0.05, 0.80, 0.15, 0.05)
+    conf_small_user = st.sidebar.slider(t['slider_small'], 0.01, 0.50, 0.03, 0.01)
 
-iou_thresh = st.sidebar.slider("Solapamiento (IoU)", 0.10, 0.80, 0.25, 0.05)
-use_tta = st.sidebar.checkbox("Modo TTA (Multiescala)", value=True)
+iou_thresh = st.sidebar.slider(t['iou_label'], 0.10, 0.80, 0.25, 0.05)
+use_tta = st.sidebar.checkbox(t['tta_label'], value=True)
 
-uploaded_file = st.file_uploader("Subir fotografía de inspección industrial...", type=["jpg", "jpeg", "png"])
+uploaded_file = st.file_uploader(t['upload_label'], type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
     image = PIL.Image.open(uploaded_file).convert("RGB")
@@ -169,7 +251,7 @@ if uploaded_file is not None:
                     'score': pred.score.value
                 })
         except Exception as e:
-            st.sidebar.error(f"Aviso SAHI: {e}. Usando YOLO estándar.")
+            st.sidebar.error(t['sahi_error'].format(e=e))
             results = model.predict(source=image, conf=0.02, iou=iou_thresh, imgsz=1024, augment=use_tta, agnostic_nms=True)
             res = results[0]
             for box in res.boxes:
@@ -283,21 +365,21 @@ if uploaded_file is not None:
     
     with col1:
         rendered_image = draw_custom_boxes(img_np, valid_detections, CLASS_COLORS)
-        st.image(rendered_image, caption="Detección de Equipos de Protección Personal", use_container_width=True)
+        st.image(rendered_image, caption=t['caption_img'], use_container_width=True)
         
     with col2:
-        st.subheader("📊 Auditoría de Cumplimiento SST")
+        st.subheader(t['audit_header'])
         
         if infraction_count > 0:
-            st.error(f"🚨 ALERTA DE SEGURIDAD\n\nSe detectaron **{infraction_count} trabajador(es)** sin chaleco de seguridad.")
+            st.error(t['alert_danger'].format(count=infraction_count))
         else:
-            st.success("🟢 CUMPLIMIENTO CORRECTO\n\nTodos los trabajadores evaluados portan chaleco y casco.")
+            st.success(t['alert_success'])
             
         if ignored_distant > 0:
-            st.caption(f"ℹ️ {ignored_distant} sujeto(s) lejanos excluidos por distancia.")
+            st.caption(t['distant_notice'].format(count=ignored_distant))
             
         st.write("---")
-        st.subheader("Conteo de EPP")
+        st.subheader(t['count_header'])
         
         counts = {'helmet': 0, 'vest': 0, 'boots': 0, 'gloves': 0, 'goggles': 0}
         for det in valid_detections:
@@ -306,23 +388,25 @@ if uploaded_file is not None:
                 counts[c_name] += 1
             
         for name, count in counts.items():
-            st.metric(label=name.upper(), value=count)
+            label_translated = t['classes'].get(name, name.upper())
+            st.metric(label=label_translated, value=count)
             
         st.write("---")
+        cols_csv = t['csv_cols']
         df_report = pd.DataFrame([{
-            'Cascos': counts['helmet'],
-            'Chalecos': counts['vest'],
-            'Botas': counts['boots'],
-            'Guantes': counts['gloves'],
-            'Gafas': counts['goggles'],
-            'Conformes': compliant_count,
-            'Infracciones': infraction_count
+            cols_csv[0]: counts['helmet'],
+            cols_csv[1]: counts['vest'],
+            cols_csv[2]: counts['boots'],
+            cols_csv[3]: counts['gloves'],
+            cols_csv[4]: counts['goggles'],
+            cols_csv[5]: compliant_count,
+            cols_csv[6]: infraction_count
         }])
         
         csv_data = df_report.to_csv(index=False).encode('utf-8')
         st.download_button(
-            label="📄 Descargar Informe Auditoría CSV",
+            label=t['download_btn'],
             data=csv_data,
-            file_name="reporte_auditoria_sst.csv",
+            file_name="ppe_audit_report.csv" if lang_key == 'EN' else "reporte_auditoria_sst.csv",
             mime="text/csv"
         )
