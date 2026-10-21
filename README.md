@@ -1,10 +1,14 @@
 # 🛡️ PPE Audit & Monitoring System (YOLOv8)
 
-🌐 **Language / Idioma:** [English](https://www.google.com/search?q=%23-ppe-audit--monitoring-system-yolov8---english) | [Español](https://www.google.com/search?q=%23-sistema-de-auditor%C3%ADa-y-monitoreo-de-epp-yolov8---espa%C3%B1ol)
+🌐 **Language / Idioma:** [English](#-ppe-audit--monitoring-system-yolov8---english) | [Español](#-sistema-de-auditoría-y-monitoreo-de-epp-yolov8---español)
 
 ---
 
 ## 🇬🇧 PPE Audit & Monitoring System (YOLOv8) - English
+
+[![Streamlit App](https://img.shields.io/badge/Streamlit-Live%20Demo-red?style=for-the-badge&logo=streamlit)](https://yolov8-safety-equipment-detection-qsj9ufsc4gezwsv7v3t9ms.streamlit.app/)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge&logo=python)](https://www.python.org/)
+[![YOLOv8](https://img.shields.io/badge/YOLOv8-Medium-orange?style=for-the-badge&logo=ultralytics)](https://ultralytics.com/)
 
 Web application for automated Personal Protective Equipment (PPE) detection and Occupational Safety and Health (OSH) compliance auditing. Built using a fine-tuned **YOLOv8 Medium** computer vision model optimized for industrial environments.
 
@@ -17,14 +21,11 @@ The model was trained on a large-scale master dataset named **`ppe-master`**, co
 * **Master Dataset Name:** `ppe-master` (Version 1)
 * **Total Images:** 29,087 annotated photographs
 * **Dataset Split:**
-* **Train Set:** 72% (20,918 images)
-* **Validation Set (Val):** 15% (4,347 images)
-* **Test Set:** 13% (3,822 images)
-
-
+  * **Train Set:** 72% (20,918 images)
+  * **Validation Set (Val):** 15% (4,347 images)
+  * **Test Set:** 13% (3,822 images)
 
 #### Source Projects & Sub-Datasets Aggregated
-
 1. `Hard-Hats` — 7,035 images (Head protection)
 2. `PPE detection` — 5,140 images (Multi-class industrial inspection)
 3. `safety-boots` — 4,896 images (Footwear protection)
@@ -35,13 +36,11 @@ The model was trained on a large-scale master dataset named **`ppe-master`**, co
 8. `glasses-ppe` — 638 images (Eye/Goggles protection)
 
 * **Target Classes (5 primary OSH classes):**
-1. `helmet` (Safety Helmet / Hardhat)
-2. `vest` (High-Visibility Reflective Vest)
-3. `boots` (Safety Footwear)
-4. `gloves` (Protective Gloves)
-5. `goggles` (Safety Goggles / Glasses)
-
-
+  1. `helmet` (Safety Helmet / Hardhat)
+  2. `vest` (High-Visibility Reflective Vest)
+  3. `boots` (Safety Footwear)
+  4. `gloves` (Protective Gloves)
+  5. `goggles` (Safety Goggles / Glasses)
 
 ---
 
@@ -55,7 +54,6 @@ The system processes input images through the following pipeline:
 4. **Adaptive Sensitivity:** Dynamic per-image confidence thresholding based on the top score distribution to maintain balanced recall across small equipment classes (`boots`, `gloves`, `goggles`).
 
 #### ⚠️ Technical Limitations & Failure Modes
-
 * **Partial or Severe Occlusion:** Detection accuracy degrades when vests or helmets are obscured by machinery or structural elements by more than 60%.
 * **Low Illumination:** Reduced recall in nighttime shots or dimly lit underground environments without direct lighting.
 * **Sub-15px Objects:** Limited detection rate on small items (such as gloves or goggles) when their effective bounding box dimension falls below 15 pixels.
@@ -67,14 +65,13 @@ The system processes input images through the following pipeline:
 Results evaluated on the test dataset (`results.csv` after 50 training epochs):
 
 | Metric | Quantitative Value |
-| --- | --- |
+| :--- | :--- |
 | **mAP@50** | **75.1%** (0.751) |
 | **mAP@50-95** | **48.0%** (0.480) |
 | **Recall** | **75.6%** (0.756) |
 | **Precision** | **68.1%** (0.681) |
 
 #### Per-Class Performance Breakdown (mAP@50)
-
 * **Helmets (`helmet`):** 88.0% mAP@50
 * **Vests (`vest`):** 84.0% mAP@50
 * **Boots (`boots`):** 72.0% mAP@50
@@ -82,7 +79,6 @@ Results evaluated on the test dataset (`results.csv` after 50 training epochs):
 * **Goggles (`goggles`):** 64.0% mAP@50
 
 #### 📈 Training & Evaluation Plots
-
 * **Loss Convergence (`results.png`):** Steady decrease in bounding box loss (*box loss*) from 1.62 down to 0.93 across 50 epochs without signs of overfitting.
 * **Precision-Recall Curve (`BoxPR_curve.png`):** High precision sustained across primary spatial classes (helmets and vests).
 * **Confusion Matrix (`confusion_matrix.png`):** Strong diagonal concentration of true positives; minor background false positives confined to small gloves.
@@ -100,7 +96,7 @@ Results evaluated on the test dataset (`results.csv` after 50 training epochs):
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/MarketablePlushiee/yolov8-safety-equipment-detection.git
+git clone [https://github.com/MarketablePlushiee/yolov8-safety-equipment-detection.git](https://github.com/MarketablePlushiee/yolov8-safety-equipment-detection.git)
 cd yolov8-safety-equipment-detection
 
 # 2. Install dependencies
@@ -108,7 +104,6 @@ pip install -r requirements.txt
 
 # 3. Launch local Streamlit interface
 streamlit run app.py
-
 ```
 
 ---
@@ -120,10 +115,13 @@ streamlit run app.py
 * **Portfolio:** [marketableplushiee.github.io/Portafolio](https://marketableplushiee.github.io/Portafolio/)
 
 ---
-
 ---
 
 ## 🇪🇸 Sistema de Auditoría y Monitoreo de EPP (YOLOv8) - Español
+
+[![Streamlit App](https://img.shields.io/badge/Streamlit-Live%20Demo-red?style=for-the-badge&logo=streamlit)](https://yolov8-safety-equipment-detection-qsj9ufsc4gezwsv7v3t9ms.streamlit.app/)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge&logo=python)](https://www.python.org/)
+[![YOLOv8](https://img.shields.io/badge/YOLOv8-Medium-orange?style=for-the-badge&logo=ultralytics)](https://ultralytics.com/)
 
 Aplicación web para la detección automatizada de Equipos de Protección Personal (EPP) y auditoría de cumplimiento en Seguridad y Salud en el Trabajo (SST). Utiliza el modelo **YOLOv8 Medium** ajustado para visión por computadora en entornos industriales.
 
@@ -136,14 +134,11 @@ El modelo fue entrenado utilizando un dataset masivo denominado **`ppe-master`**
 * **Nombre del Dataset Maestro:** `ppe-master` (Versión 1)
 * **Total de imágenes:** 29,087 fotografías anotadas
 * **División del Dataset:**
-* **Entrenamiento (Train):** 72% (20,918 imágenes)
-* **Validación (Val):** 15% (4,347 imágenes)
-* **Prueba (Test):** 13% (3,822 imágenes)
-
-
+  * **Entrenamiento (Train):** 72% (20,918 imágenes)
+  * **Validación (Val):** 15% (4,347 imágenes)
+  * **Prueba (Test):** 13% (3,822 imágenes)
 
 #### Sub-Proyectos Integrados
-
 1. `Hard-Hats` — 7,035 imágenes (Protección de cabeza)
 2. `PPE detection` — 5,140 imágenes (Inspección industrial multiclase)
 3. `safety-boots` — 4,896 imágenes (Calzado de seguridad)
@@ -154,13 +149,11 @@ El modelo fue entrenado utilizando un dataset masivo denominado **`ppe-master`**
 8. `glasses-ppe` — 638 imágenes (Protección ocular / Antiparras)
 
 * **Clases objetivo (5 clases SST principales):**
-1. `helmet` (Casco de seguridad)
-2. `vest` (Chaleco reflectante)
-3. `boots` (Calzado de seguridad)
-4. `gloves` (Guantes de protección)
-5. `goggles` (Gafas / Antiparras de protección)
-
-
+  1. `helmet` (Casco de seguridad)
+  2. `vest` (Chaleco reflectante)
+  3. `boots` (Calzado de seguridad)
+  4. `gloves` (Guantes de protección)
+  5. `goggles` (Gafas / Antiparras de protección)
 
 ---
 
@@ -174,7 +167,6 @@ El sistema procesa las imágenes mediante la siguiente canalización:
 4. **Sensibilidad Adaptativa:** Ajuste dinámico de umbrales por imagen según la distribución de puntajes de confianza máximos para equilibrar el recall en accesorios pequeños (`boots`, `gloves`, `goggles`).
 
 #### ⚠️ Limitaciones Técnicas y Casos de Falla
-
 * **Oclusión parcial o severa:** Pérdida de detección cuando el chaleco o casco se encuentra cubierto por maquinaria u objetos en más de un 60%.
 * **Baja iluminación:** Reducción en la tasa de detección (recall) en tomas nocturnas o espacios subterráneos sin luz directa.
 * **Objetos sub-15px:** Detección limitada en elementos muy pequeños (como gafas o guantes) cuando la resolución efectiva del objeto cae por debajo de los 15 píxeles en la toma.
@@ -186,14 +178,13 @@ El sistema procesa las imágenes mediante la siguiente canalización:
 Resultados obtenidos en la evaluación del conjunto de prueba (`results.csv` tras 50 épocas de entrenamiento):
 
 | Métrica General | Valor Cuantitativo |
-| --- | --- |
+| :--- | :--- |
 | **mAP@50** | **75.1%** (0.751) |
 | **mAP@50-95** | **48.0%** (0.480) |
 | **Recall (Exhaustividad)** | **75.6%** (0.756) |
 | **Precision (Precisión)** | **68.1%** (0.681) |
 
 #### Rendimiento Detallado por Clase (mAP@50)
-
 * **Cascos (`helmet`):** 88.0% mAP@50
 * **Chalecos (`vest`):** 84.0% mAP@50
 * **Botas (`boots`):** 72.0% mAP@50
@@ -201,7 +192,6 @@ Resultados obtenidos en la evaluación del conjunto de prueba (`results.csv` tra
 * **Gafas (`goggles`):** 64.0% mAP@50
 
 #### 📈 Gráficos de Evaluación
-
 * **Convergencia de Pérdidas (`results.png`):** Disminución sostenida de la pérdida de caja (*box loss*) de 1.62 a 0.93 en 50 épocas sin evidencia de sobreajuste.
 * **Curva Precision-Recall (`BoxPR_curve.png`):** Desempeño destacado en las clases de mayor volumen espacial (cascos y chalecos).
 * **Matriz de Confusión (`confusion_matrix.png`):** Alta concentración de verdaderos positivos en la diagonal principal; confusión residual ubicada en guantes pequeños frente al fondo.
@@ -219,7 +209,7 @@ Resultados obtenidos en la evaluación del conjunto de prueba (`results.csv` tra
 
 ```bash
 # 1. Clonar el repositorio
-git clone https://github.com/MarketablePlushiee/yolov8-safety-equipment-detection.git
+git clone [https://github.com/MarketablePlushiee/yolov8-safety-equipment-detection.git](https://github.com/MarketablePlushiee/yolov8-safety-equipment-detection.git)
 cd yolov8-safety-equipment-detection
 
 # 2. Instalar dependencias requeridas
@@ -227,7 +217,6 @@ pip install -r requirements.txt
 
 # 3. Ejecutar la aplicación web en local
 streamlit run app.py
-
 ```
 
 ---
