@@ -13,10 +13,9 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Estilos CSS personalizados para destacar la sección de idioma
+# Estilos CSS personalizados
 st.markdown("""
     <style>
-    /* Estilos generales */
     .main .block-container {
         padding-top: 2rem;
         padding-bottom: 2rem;
@@ -28,14 +27,12 @@ st.markdown("""
         border: 1px solid #334155;
     }
     
-    /* Destacar caja de idioma en el Sidebar */
     div[data-testid="stSidebarUserContent"] div.stRadio > label {
         font-size: 1.15rem !important;
         font-weight: 700 !important;
         color: #38bdf8 !important;
     }
     
-    /* Contenedor tipo tarjeta destacada para el idioma */
     div[data-testid="stSidebar"] div.stElementContainer:has(div.stRadio) {
         background-color: #1e293b;
         padding: 14px;
@@ -44,7 +41,6 @@ st.markdown("""
         margin-bottom: 1.5rem;
     }
 
-    /* Aumentar texto de opciones de radio en el sidebar */
     div[data-testid="stSidebar"] label[data-baseweb="radio"] div {
         font-size: 1.1rem !important;
         font-weight: 600 !important;
@@ -58,18 +54,16 @@ st.markdown("""
 TEXTS = {
     'ES': {
         'page_title': "Sistema de Auditoría & Monitoreo de EPP",
-        'subtitle': "Detección automatizada de Equipos de Protección Personal mediante Visión por Computadora (YOLOv8 + SAHI)",
+        'subtitle': "Detección automatizada de Equipos de Protección Personal mediante Visión por Computadora (YOLOv8)",
         'expander_title': "ℹ️ Instrucciones de uso y guía de la aplicación",
         'guide_1': "1. **Cargar Imagen:** Sube una fotografía de inspección industrial (`.jpg`, `.jpeg`, `.png`).",
         'guide_2': "2. **Configuración Lateral:**",
-        'guide_2a': "   * **Modo SAHI:** Actívalo para fotografías de alta resolución con trabajadores a gran distancia o elementos pequeños (guantes, gafas).",
-        'guide_2b': "   * **Filtrado por Distancia:** Ignora automáticamente personas en el fondo lejano para evitar falsos positivos en la auditoría.",
-        'guide_2c': "   * **Sensibilidad Adaptativa:** Ajusta dinámicamente los umbrales de confianza según el nivel de detalle de la toma.",
+        'guide_2a': "   * **Filtrado por Distancia:** Ignora automáticamente personas en el fondo lejano para evitar falsos positivos.",
+        'guide_2b': "   * **Sensibilidad Adaptativa:** Ajusta dinámicamente los umbrales de confianza según la foto.",
+        'guide_2c': "   * **Modo TTA (Multiescala):** Aplica aumento en inferencia para mejorar la detección de objetos complejos.",
         'guide_3': "3. **Resultados:** Revisa la imagen anotada, el estado de cumplimiento SST y descarga el informe en formato CSV.",
         'sidebar_lang': "🌐 LANGUAGE / IDIOMA",
         'sidebar_config': "⚙️ Configuración de Inferencia",
-        'sahi_label': "🔬 Activar Modo Gigapixel SAHI (Fotos de alta resolución)",
-        'sahi_help': "Divide la imagen en recortes de 480x480 para accesorios pequeños a gran distancia.",
         'distant_label': "👥 Ignorar personas lejanas en Auditoría SST",
         'distant_help': "Excluye cascos pequeños en el fondo lejano para evitar falsas alarmas por distancia.",
         'auto_label': "🤖 Sensibilidad Automática Adaptativa (Por Foto)",
@@ -78,7 +72,6 @@ TEXTS = {
         'iou_label': "Solapamiento (IoU)",
         'tta_label': "Modo TTA (Multiescala)",
         'upload_label': "Subir fotografía de inspección industrial...",
-        'sahi_error': "Aviso SAHI: {e}. Usando YOLO estándar.",
         'audit_header': "📊 Auditoría de Cumplimiento SST",
         'alert_danger': "🚨 ALERTA DE SEGURIDAD\n\nSe detectaron **{count} trabajador(es)** sin chaleco de seguridad.",
         'alert_success': "🟢 CUMPLIMIENTO CORRECTO\n\nTodos los trabajadores evaluados portan chaleco y casco.",
@@ -97,18 +90,16 @@ TEXTS = {
     },
     'EN': {
         'page_title': "PPE Audit & Monitoring System",
-        'subtitle': "Automated Personal Protective Equipment Detection using Computer Vision (YOLOv8 + SAHI)",
+        'subtitle': "Automated Personal Protective Equipment Detection using Computer Vision (YOLOv8)",
         'expander_title': "ℹ️ Usage Instructions & Application Guide",
         'guide_1': "1. **Upload Image:** Upload an industrial inspection photograph (`.jpg`, `.jpeg`, `.png`).",
         'guide_2': "2. **Sidebar Settings:**",
-        'guide_2a': "   * **SAHI Mode:** Enable it for high-resolution photos with distant workers or small items (gloves, goggles).",
-        'guide_2b': "   * **Distance Filtering:** Automatically ignores background individuals to prevent false positives.",
-        'guide_2c': "   * **Adaptive Sensitivity:** Dynamically adjusts confidence thresholds based on image detail.",
+        'guide_2a': "   * **Distance Filtering:** Automatically ignores background individuals to prevent false positives.",
+        'guide_2b': "   * **Adaptive Sensitivity:** Dynamically adjusts confidence thresholds based on image detail.",
+        'guide_2c': "   * **TTA Mode (Multi-scale):** Applies test-time augmentation to enhance detection performance.",
         'guide_3': "3. **Results:** Review annotated image, OHS compliance status, and download the CSV report.",
         'sidebar_lang': "🌐 LANGUAGE / IDIOMA",
         'sidebar_config': "⚙️ Inference Settings",
-        'sahi_label': "🔬 Enable Gigapixel SAHI Mode (High-res photos)",
-        'sahi_help': "Slices the image into 480x480 tiles for small objects at long distances.",
         'distant_label': "👥 Ignore distant workers in OHS Audit",
         'distant_help': "Excludes small helmets in the far background to prevent distance false alarms.",
         'auto_label': "🤖 Adaptive Auto Sensitivity (Per Photo)",
@@ -117,7 +108,6 @@ TEXTS = {
         'iou_label': "Overlap (IoU)",
         'tta_label': "TTA Mode (Multi-scale)",
         'upload_label': "Upload industrial inspection photo...",
-        'sahi_error': "SAHI Notice: {e}. Falling back to standard YOLO.",
         'audit_header': "📊 OHS Compliance Audit",
         'alert_danger': "🚨 SAFETY ALERT\n\nDetected **{count} worker(s)** without safety vest.",
         'alert_success': "🟢 FULL COMPLIANCE\n\nAll evaluated workers are wearing safety vest and helmet.",
@@ -137,7 +127,7 @@ TEXTS = {
 }
 
 # ---------------------------------------------------------
-# SIDEBAR - SELECTOR DE IDIOMA DESTACADO
+# SIDEBAR - SELECTOR DE IDIOMA
 # ---------------------------------------------------------
 lang_choice = st.sidebar.radio(
     "🌐 LANGUAGE / IDIOMA", 
@@ -149,7 +139,6 @@ lang_choice = st.sidebar.radio(
 lang_key = 'ES' if lang_choice == "Español" else 'EN'
 t = TEXTS[lang_key]
 
-# Titulares dinámicos
 st.title(f"🛡️ {t['page_title']}")
 st.caption(t['subtitle'])
 
@@ -219,12 +208,6 @@ def draw_custom_boxes(img_np, detections, class_colors):
 # Sidebar
 st.sidebar.header(t['sidebar_config'])
 
-use_sahi = st.sidebar.checkbox(
-    t['sahi_label'], 
-    value=True,
-    help=t['sahi_help']
-)
-
 ignore_distant = st.sidebar.checkbox(
     t['distant_label'], 
     value=True,
@@ -249,52 +232,14 @@ if uploaded_file is not None:
     
     all_detections = []
     
-    if use_sahi:
-        try:
-            from sahi import AutoDetectionModel
-            from sahi.predict import get_sliced_prediction
-            
-            detection_model = AutoDetectionModel.from_pretrained(
-                model_type='yolov8',
-                model_path='best.pt',
-                confidence_threshold=0.02,
-                device='cpu'
-            )
-            sahi_res = get_sliced_prediction(
-                img_np,
-                detection_model,
-                slice_height=480,
-                slice_width=480,
-                overlap_height_ratio=0.35,
-                overlap_width_ratio=0.35,
-                postprocess_type="NMS",
-                postprocess_match_threshold=iou_thresh
-            )
-            for pred in sahi_res.object_prediction_list:
-                all_detections.append({
-                    'xyxy': pred.bbox.to_xyxy(),
-                    'class': pred.category.name,
-                    'score': pred.score.value
-                })
-        except Exception as e:
-            st.sidebar.error(t['sahi_error'].format(e=e))
-            results = model.predict(source=image, conf=0.02, iou=iou_thresh, imgsz=1024, augment=use_tta, agnostic_nms=True)
-            res = results[0]
-            for box in res.boxes:
-                all_detections.append({
-                    'xyxy': box.xyxy[0].cpu().numpy().tolist(),
-                    'class': res.names[int(box.cls[0])],
-                    'score': float(box.conf[0])
-                })
-    else:
-        results = model.predict(source=image, conf=0.02, iou=iou_thresh, imgsz=1024, augment=use_tta, agnostic_nms=True)
-        res = results[0]
-        for box in res.boxes:
-            all_detections.append({
-                'xyxy': box.xyxy[0].cpu().numpy().tolist(),
-                'class': res.names[int(box.cls[0])],
-                'score': float(box.conf[0])
-            })
+    results = model.predict(source=image, conf=0.02, iou=iou_thresh, imgsz=1024, augment=use_tta, agnostic_nms=True)
+    res = results[0]
+    for box in res.boxes:
+        all_detections.append({
+            'xyxy': box.xyxy[0].cpu().numpy().tolist(),
+            'class': res.names[int(box.cls[0])],
+            'score': float(box.conf[0])
+        })
             
     if auto_mode:
         floors = {'helmet': 0.10, 'vest': 0.08, 'boots': 0.03, 'gloves': 0.02, 'goggles': 0.03}
