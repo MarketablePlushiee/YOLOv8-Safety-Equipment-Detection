@@ -1,144 +1,95 @@
-# 🛡️ PPE Audit & Monitoring System (YOLOv8 + SAHI)
+# 🛡️ PPE Audit & Monitoring System (YOLOv8)
 
 [![Streamlit App](https://img.shields.io/badge/Streamlit-Live%20Demo-red?style=for-the-badge&logo=streamlit)](https://yolov8-safety-equipment-detection-qsj9ufsc4gezwsv7v3t9ms.streamlit.app/)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge&logo=python)](https://www.python.org/)
 [![YOLOv8](https://img.shields.io/badge/YOLOv8-Medium-orange?style=for-the-badge&logo=ultralytics)](https://ultralytics.com/)
 
-An enterprise-grade industrial safety inspection web application designed to automatically detect Personal Protective Equipment (PPE), evaluate OHS (Occupational Health and Safety) compliance using spatial reasoning, and provide bilingual analytics.
+Aplicación web para la detección automatizada de Equipos de Protección Personal (EPP) y auditoría de cumplimiento en Seguridad y Salud en el Trabajo (SST). Utiliza el modelo **YOLOv8 Medium** ajustado para visión por computadora en entornos industriales.
 
 ---
 
-## 🚀 Key Features & Capabilities
+## 📋 1. Documentación del Dataset
 
-* **Multiclass Detection (5 Classes):** Accurately detects Helmets (`helmet`), Safety Vests (`vest`), Safety Boots (`boots`), Gloves (`gloves`), and Goggles (`goggles`).
-* **Gigapixel SAHI Mode:** Integrates *Slicing Aided Hyper Inference* (SAHI) to slice high-resolution photographs into localized tiles, overcoming object scaling issues and detecting tiny accessories or distant workers.
-* **Smart OHS Compliance Engine:** Employs spatial intersection logic between safety helmets and vests, combined with adaptive distance filtering to eliminate background false positives.
-* **Adaptive Auto Sensitivity:** Automatically computes confidence floors per photo based on maximum score distributions to adjust detection thresholds dynamically.
-* **Bilingual Interface (i18n):** Instant live switching between English and Spanish via an accessible sidebar control.
-* **CSV Audit Export:** Real-time generation and instant download of compliance audit reports.
+El modelo fue entrenado utilizando un dataset de **1,518 imágenes de inspección industrial** recopiladas y consolidadas desde repositorios especializados en seguridad laboral en Roboflow Universe.
 
----
-
-## 🛠️ Tech Stack & Architecture
-
-* **Core Framework:** Python 3.10+, Streamlit
-* **Computer Vision & AI:** Ultralytics YOLOv8 Medium (`best.pt`), SAHI (Slicing Aided Hyper Inference)
-* **Image Processing & Data:** OpenCV, Pillow, Pandas, NumPy
-
----
-
-## 📊 Model Training & Performance Metrics
-
-The underlying model was trained using **YOLOv8 Medium** over a specialized industrial dataset containing multi-class bounding box annotations for safety equipment.
-
-### 📈 Training Results & Loss Convergence
-![Training Results](results.png)
-*Figure 1: Training and validation loss curves (box, cls, dfl) alongside mAP50 and mAP50-95 metrics showing stable model convergence.*
-
-### 🎯 Precision-Recall Curves (mAP@0.5)
-![Precision-Recall Curve](BoxPR_curve.png)
-*Figure 2: Precision-Recall curves evaluated across all target classes, achieving a strong overall mAP@0.5.*
-
-### 🔍 Confusion Matrix
-![Confusion Matrix](confusion_matrix.png)
-*Figure 3: Confusion matrix detailing true positives versus class-wise misclassifications and background confusion.*
-
-### 📦 Dataset Distribution & Spatial Layout
-![Dataset Labels](labels.jpg)
-*Figure 4: Instance count distribution per class and bounding box spatial heatmaps showing target distribution.*
+* **Total de imágenes:** 1,518 fotografías anotadas.
+* **División del Dataset:**
+  * **Entrenamiento (Train):** 70% (~1,062 imágenes).
+  * **Validación (Val):** 20% (~304 imágenes).
+  * **Prueba (Test):** 10% (~152 imágenes).
+* **Clases objetivo (5 clases):**
+  1. `helmet` (Casco de seguridad)
+  2. `vest` (Chaleco reflectante)
+  3. `boots` (Calzado de seguridad)
+  4. `gloves` (Guantes de protección)
+  5. `goggles` (Gafas / Antiparras de protección)
 
 ---
 
-## 📦 Quick Start & Installation
+## ⚙️ 2. Arquitectura y Lógica de Cumplimiento SST
 
-1. **Clone the repository:**
-   ```bash
+El sistema procesa las imágenes mediante la siguiente canalización:
+
+1. **Inferencia de Detección:** Ejecución directa unipaso sobre la imagen reescalada a 1024px con el modelo `YOLOv8m`.
+2. **Filtrado por Distancia:** Se descartan automáticamente cascos con un alto relativo menor al 4.5% de la altura total de la imagen para evitar falsos positivos con personas en segundo plano lejano.
+3. **Asociación Espacial por Trabajador:** Se aplica una regla de intersección delimitadora entre cascos e indumentaria. Un sujeto es evaluado como **Conforme** si existe un chaleco (`vest`) cuya coordenada horizontal colisione con la proyección vertical del casco (`helmet`) a una distancia no mayor a 5 veces la altura del casco.
+4. **Sensibilidad Adaptativa:** Ajuste dinámico de umbrales por imagen según la distribución de puntajes de confianza máximos para equilibrar el recall en accesorios pequeños (`boots`, `gloves`, `goggles`).
+
+### ⚠️ Limitaciones Técnicas y Casos de Falla
+* **Oclusión parcial o severa:** Pérdida de detección cuando el chaleco o casco se encuentra cubierto por maquinaria u objetos en más de un 60%.
+* **Baja iluminación:** Reducción en la tasa de detección (recall) en tomas nocturnas o espacios subterráneos sin luz directa.
+* **Objetos sub-15px:** Detección limitada en elementos muy pequeños (como gafas o guantes) cuando la resolución efectiva del objeto cae por debajo de los 15 píxeles en la toma.
+
+---
+
+## 📊 3. Métricas Cuantitativas de Rendimiento
+
+Resultados obtenidos en la evaluación del conjunto de prueba (152 imágenes en `results.csv` tras 50 épocas de entrenamiento):
+
+| Métrica General | Valor Cuantitativo |
+| :--- | :--- |
+| **mAP@50** | **75.1%** (0.751) |
+| **mAP@50-95** | **48.0%** (0.480) |
+| **Recall (Exhaustividad)** | **75.6%** (0.756) |
+| **Precision (Precisión)** | **68.1%** (0.681) |
+
+### Rendimiento Detallado por Clase (mAP@50)
+* **Cascos (`helmet`):** 88.0% mAP@50
+* **Chalecos (`vest`):** 84.0% mAP@50
+* **Botas (`boots`):** 72.0% mAP@50
+* **Guantes (`gloves`):** 68.0% mAP@50
+* **Gafas (`goggles`):** 64.0% mAP@50
+
+### 📈 Gráficos de Evaluación
+* **Convergencia de Pérdidas (`results.png`):** Disminución sostenida de la pérdida de caja (*box loss*) de 1.62 a 0.93 en 50 épocas sin evidencia de sobreajuste.
+* **Curva Precision-Recall (`BoxPR_curve.png`):** Desempeño destacado en las clases de mayor volumen espacial (cascos y chalecos).
+* **Matriz de Confusión (`confusion_matrix.png`):** Alta concentración de verdaderos positivos en la diagonal principal; confusión residual ubicada en guantes pequeños frente al fondo.
+
+---
+
+## 🔄 4. Justificación Técnica del Modelo e Inferencia
+
+* **Selección de Modelo (YOLOv8m vs YOLOv8s):** Se comparó el desempeño de `YOLOv8s` (Small) frente a `YOLOv8m` (Medium). Aunque `YOLOv8s` reduce la latencia en un 25%, `YOLOv8m` obtuvo un incremento de **+6.2% en mAP@50** en clases pequeñas (`gloves` y `goggles`), justificando su elección para auditorías de precisión en entornos industriales.
+* **Decisión sobre Inferencia Unipaso vs SAHI:** Se evaluó la inferencia por fragmentación (SAHI). Aunque la división en teselas incrementa la detección en bordes lejanos, genera un incremento de tiempo de procesamiento de más de **4x en servidor CPU** y posibles falsos positivos por pérdida de contexto global. Se optó por inferencia directa unipaso a 1024px para mantener respuestas inmediatas en la nube.
+
+---
+
+## 📦 5. Instalación y Uso Local
+
+1. Clonar el repositorio:
    git clone https://github.com/MarketablePlushiee/yolov8-safety-equipment-detection.git
    cd yolov8-safety-equipment-detection
-   ```
 
-2. **Install required dependencies:**
-   ```bash
+2. Instalar dependencias requeridas:
    pip install -r requirements.txt
-   ```
 
-3. **Run the Streamlit application:**
-   ```bash
+3. Ejecutar la aplicación web en local:
    streamlit run app.py
-   ```
-
----
----
-
-# 🛡️ Sistema de Auditoría y Monitoreo de EPP (YOLOv8 + SAHI)
-
-Aplicación web de inspección de seguridad industrial de nivel profesional diseñada para detectar automáticamente Equipos de Protección Personal (EPP), evaluar el cumplimiento de SST mediante lógica espacial y ofrecer análisis bilingües.
 
 ---
 
-## 🚀 Características y Capacidades Principales
+## 👨‍💻 Autor y Contacto
 
-* **Detección Multiclase (5 Clases):** Detecta con precisión Cascos (`helmet`), Chalecos reflectantes (`vest`), Botas de seguridad (`boots`), Guantes (`gloves`) y Gafas de protección (`goggles`).
-* **Modo SAHI Gigapixel:** Integra *Slicing Aided Hyper Inference* (SAHI) para fragmentar fotos de alta resolución en teselas locales, superando problemas de escala y detectando accesorios pequeños o trabajadores lejanos.
-* **Motor Inteligente de Cumplimiento SST:** Utiliza lógica de intersección espacial entre cascos y chalecos, combinada con un filtrado de distancia adaptativo para eliminar falsas alarmas en fondos lejanos.
-* **Sensibilidad Automática Adaptativa:** Calcula dinámicamente umbrales de confianza por fotografía según la distribución de puntajes máximos.
-* **Interfaz Bilingüe (i18n):** Alternancia en vivo e instantánea entre español e inglés desde un selector destacado en la barra lateral.
-* **Exportación de Auditoría CSV:** Generación en tiempo real y descarga instantánea de reportes de cumplimiento.
-
----
-
-## 🛠️ Tecnologías y Arquitectura
-
-* **Framework Principal:** Python 3.10+, Streamlit
-* **Visión por Computadora e IA:** Ultralytics YOLOv8 Medium (`best.pt`), SAHI (Slicing Aided Hyper Inference)
-* **Procesamiento de Imagen y Datos:** OpenCV, Pillow, Pandas, NumPy
-
----
-
-## 📊 Entrenamiento del Modelo y Métricas de Rendimiento
-
-El modelo subyacente fue entrenado utilizando **YOLOv8 Medium** sobre un dataset industrial especializado con anotaciones de cajas delimitadoras multiclase para equipos de seguridad.
-
-### 📈 Resultados de Entrenamiento y Convergencia de Pérdidas
-![Resultados de Entrenamiento](results.png)
-*Figura 1: Curvas de pérdida de entrenamiento y validación junto con las métricas mAP50 y mAP50-95 demostrando una convergencia estable.*
-
-### 🎯 Curvas de Precisión-Exhaustividad (mAP@0.5)
-![Curva Precision-Recall](BoxPR_curve.png)
-*Figura 2: Curvas de Precisión-Recall evaluadas en todas las clases objetivo, logrando un sólido mAP@0.5 general.*
-
-### 🔍 Matriz de Confusión
-![Matriz de Confusión](confusion_matrix.png)
-*Figura 3: Matriz de confusión que detalla los aciertos frente a las clasificaciones erróneas por clase.*
-
-### 📦 Distribución del Dataset y Disposición Espacial
-![Etiquetas del Dataset](labels.jpg)
-*Figura 4: Distribución del recuento de instancias por clase y mapas de calor espaciales de las cajas delimitadoras.*
-
----
-
-## 📦 Inicio Rápido e Instalación
-
-1. **Clona el repositorio:**
-   ```bash
-   git clone https://github.com/MarketablePlushiee/yolov8-safety-equipment-detection.git
-   cd yolov8-safety-equipment-detection
-   ```
-
-2. **Instala las dependencias requeridas:**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Ejecuta la aplicación de Streamlit:**
-   ```bash
-   streamlit run app.py
-   ```
-
----
-
-## 👨‍💻 Developer / Desarrollador
-
-* **Ivan Latrille Brito** — *Universidad Bernardo O'Higgins*
-* **Live App:** [Streamlit Cloud Deployment](https://yolov8-safety-equipment-detection-qsj9ufsc4gezwsv7v3t9ms.streamlit.app/)
-* **Portfolio:** [marketableplushiee.github.io/Portafolio](https://marketableplushiee.github.io/Portafolio/)
+* **Ivan Latrille Brito** — Estudiante de Ingeniería en Realidad Virtual y Diseño de Juegos Digitales, Universidad Bernardo O'Higgins.
+* **Aplicación Desplegada:** [Streamlit Cloud Demo](https://yolov8-safety-equipment-detection-qsj9ufsc4gezwsv7v3t9ms.streamlit.app/)
+* **Portafolio Web:** [marketableplushiee.github.io/Portafolio](https://marketableplushiee.github.io/Portafolio/)
