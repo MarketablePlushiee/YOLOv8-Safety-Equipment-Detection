@@ -1,21 +1,10 @@
-Toda la razón, disculpa la confusión. En este entorno de chat no existe una función nativa para generar un botón de descarga directa de archivos `.md` en tu navegador, así que enviarte código Python no te servía de nada.
-
-Aquí tienes el contenido completo del **`README.md`** (Inglés primero, Español después, con las 29,087 imágenes de `ppe-master` y sin ningún tipo de etiqueta rara).
-
-Puedes copiarlo completo usando el botón de copiar (el ícono de portapapeles en la esquina del bloque) y pegarlo directamente en un Bloc de Notas o VS Code para guardarlo como `README.md`:
-
-```markdown
 # 🛡️ PPE Audit & Monitoring System (YOLOv8)
 
-🌐 **Language / Idioma:** [English](#-ppe-audit--monitoring-system-yolov8---english) | [Español](#-sistema-de-auditoría-y-monitoreo-de-epp-yolov8---español)
+🌐 **Language / Idioma:** [English](https://www.google.com/search?q=%23-ppe-audit--monitoring-system-yolov8---english) | [Español](https://www.google.com/search?q=%23-sistema-de-auditor%C3%ADa-y-monitoreo-de-epp-yolov8---espa%C3%B1ol)
 
 ---
 
 ## 🇬🇧 PPE Audit & Monitoring System (YOLOv8) - English
-
-[![Streamlit App](https://img.shields.io/badge/Streamlit-Live%20Demo-red?style=for-the-badge&logo=streamlit)](https://yolov8-safety-equipment-detection-qsj9ufsc4gezwsv7v3t9ms.streamlit.app/)
-[![Python](https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge&logo=python)](https://www.python.org/)
-[![YOLOv8](https://img.shields.io/badge/YOLOv8-Medium-orange?style=for-the-badge&logo=ultralytics)](https://ultralytics.com/)
 
 Web application for automated Personal Protective Equipment (PPE) detection and Occupational Safety and Health (OSH) compliance auditing. Built using a fine-tuned **YOLOv8 Medium** computer vision model optimized for industrial environments.
 
@@ -28,11 +17,14 @@ The model was trained on a large-scale master dataset named **`ppe-master`**, co
 * **Master Dataset Name:** `ppe-master` (Version 1)
 * **Total Images:** 29,087 annotated photographs
 * **Dataset Split:**
-  * **Train Set:** 72% (20,918 images)
-  * **Validation Set (Val):** 15% (4,347 images)
-  * **Test Set:** 13% (3,822 images)
+* **Train Set:** 72% (20,918 images)
+* **Validation Set (Val):** 15% (4,347 images)
+* **Test Set:** 13% (3,822 images)
+
+
 
 #### Source Projects & Sub-Datasets Aggregated
+
 1. `Hard-Hats` — 7,035 images (Head protection)
 2. `PPE detection` — 5,140 images (Multi-class industrial inspection)
 3. `safety-boots` — 4,896 images (Footwear protection)
@@ -43,11 +35,13 @@ The model was trained on a large-scale master dataset named **`ppe-master`**, co
 8. `glasses-ppe` — 638 images (Eye/Goggles protection)
 
 * **Target Classes (5 primary OSH classes):**
-  1. `helmet` (Safety Helmet / Hardhat)
-  2. `vest` (High-Visibility Reflective Vest)
-  3. `boots` (Safety Footwear)
-  4. `gloves` (Protective Gloves)
-  5. `goggles` (Safety Goggles / Glasses)
+1. `helmet` (Safety Helmet / Hardhat)
+2. `vest` (High-Visibility Reflective Vest)
+3. `boots` (Safety Footwear)
+4. `gloves` (Protective Gloves)
+5. `goggles` (Safety Goggles / Glasses)
+
+
 
 ---
 
@@ -61,6 +55,7 @@ The system processes input images through the following pipeline:
 4. **Adaptive Sensitivity:** Dynamic per-image confidence thresholding based on the top score distribution to maintain balanced recall across small equipment classes (`boots`, `gloves`, `goggles`).
 
 #### ⚠️ Technical Limitations & Failure Modes
+
 * **Partial or Severe Occlusion:** Detection accuracy degrades when vests or helmets are obscured by machinery or structural elements by more than 60%.
 * **Low Illumination:** Reduced recall in nighttime shots or dimly lit underground environments without direct lighting.
 * **Sub-15px Objects:** Limited detection rate on small items (such as gloves or goggles) when their effective bounding box dimension falls below 15 pixels.
@@ -72,13 +67,14 @@ The system processes input images through the following pipeline:
 Results evaluated on the test dataset (`results.csv` after 50 training epochs):
 
 | Metric | Quantitative Value |
-| :--- | :--- |
+| --- | --- |
 | **mAP@50** | **75.1%** (0.751) |
 | **mAP@50-95** | **48.0%** (0.480) |
 | **Recall** | **75.6%** (0.756) |
 | **Precision** | **68.1%** (0.681) |
 
 #### Per-Class Performance Breakdown (mAP@50)
+
 * **Helmets (`helmet`):** 88.0% mAP@50
 * **Vests (`vest`):** 84.0% mAP@50
 * **Boots (`boots`):** 72.0% mAP@50
@@ -86,6 +82,7 @@ Results evaluated on the test dataset (`results.csv` after 50 training epochs):
 * **Goggles (`goggles`):** 64.0% mAP@50
 
 #### 📈 Training & Evaluation Plots
+
 * **Loss Convergence (`results.png`):** Steady decrease in bounding box loss (*box loss*) from 1.62 down to 0.93 across 50 epochs without signs of overfitting.
 * **Precision-Recall Curve (`BoxPR_curve.png`):** High precision sustained across primary spatial classes (helmets and vests).
 * **Confusion Matrix (`confusion_matrix.png`):** Strong diagonal concentration of true positives; minor background false positives confined to small gloves.
@@ -103,7 +100,7 @@ Results evaluated on the test dataset (`results.csv` after 50 training epochs):
 
 ```bash
 # 1. Clone repository
-git clone [https://github.com/MarketablePlushiee/yolov8-safety-equipment-detection.git](https://github.com/MarketablePlushiee/yolov8-safety-equipment-detection.git)
+git clone https://github.com/MarketablePlushiee/yolov8-safety-equipment-detection.git
 cd yolov8-safety-equipment-detection
 
 # 2. Install dependencies
@@ -222,7 +219,7 @@ Resultados obtenidos en la evaluación del conjunto de prueba (`results.csv` tra
 
 ```bash
 # 1. Clonar el repositorio
-git clone [https://github.com/MarketablePlushiee/yolov8-safety-equipment-detection.git](https://github.com/MarketablePlushiee/yolov8-safety-equipment-detection.git)
+git clone https://github.com/MarketablePlushiee/yolov8-safety-equipment-detection.git
 cd yolov8-safety-equipment-detection
 
 # 2. Instalar dependencias requeridas
@@ -240,7 +237,3 @@ streamlit run app.py
 * **Ivan Latrille Brito** — Estudiante de Ingeniería en Realidad Virtual y Diseño de Juegos Digitales, Universidad Bernardo O'Higgins.
 * **Aplicación Desplegada:** [Streamlit Cloud Demo](https://yolov8-safety-equipment-detection-qsj9ufsc4gezwsv7v3t9ms.streamlit.app/)
 * **Portafolio Web:** [marketableplushiee.github.io/Portafolio](https://marketableplushiee.github.io/Portafolio/)
-
-```
-
-```
