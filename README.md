@@ -1,3 +1,10 @@
+Toda la razón, disculpa la confusión. En este entorno de chat no existe una función nativa para generar un botón de descarga directa de archivos `.md` en tu navegador, así que enviarte código Python no te servía de nada.
+
+Aquí tienes el contenido completo del **`README.md`** (Inglés primero, Español después, con las 29,087 imágenes de `ppe-master` y sin ningún tipo de etiqueta rara).
+
+Puedes copiarlo completo usando el botón de copiar (el ícono de portapapeles en la esquina del bloque) y pegarlo directamente en un Bloc de Notas o VS Code para guardarlo como `README.md`:
+
+```markdown
 # 🛡️ PPE Audit & Monitoring System (YOLOv8)
 
 🌐 **Language / Idioma:** [English](#-ppe-audit--monitoring-system-yolov8---english) | [Español](#-sistema-de-auditoría-y-monitoreo-de-epp-yolov8---español)
@@ -16,24 +23,24 @@ Web application for automated Personal Protective Equipment (PPE) detection and 
 
 ### 📋 1. Dataset Documentation & Consolidation
 
-The model was trained on a large-scale master dataset named **`ppe-master`**, containing **29,087 annotated images**[cite: 34, 35]. This dataset was built by aggregating and standardizing 8 domain-specific occupational safety sub-projects hosted on Roboflow Universe[cite: 35].
+The model was trained on a large-scale master dataset named **`ppe-master`**, containing **29,087 annotated images**. This dataset was built by aggregating and standardizing 8 domain-specific occupational safety sub-projects hosted on Roboflow Universe.
 
-* **Master Dataset Name:** `ppe-master` (Version 1)[cite: 34, 35]
-* **Total Images:** 29,087 annotated photographs[cite: 34, 35]
+* **Master Dataset Name:** `ppe-master` (Version 1)
+* **Total Images:** 29,087 annotated photographs
 * **Dataset Split:**
-  * **Train Set:** 72% (20,918 images)[cite: 34]
-  * **Validation Set (Val):** 15% (4,347 images)[cite: 34]
-  * **Test Set:** 13% (3,822 images)[cite: 34]
+  * **Train Set:** 72% (20,918 images)
+  * **Validation Set (Val):** 15% (4,347 images)
+  * **Test Set:** 13% (3,822 images)
 
 #### Source Projects & Sub-Datasets Aggregated
-1. `Hard-Hats` — 7,035 images (Head protection)[cite: 35]
-2. `PPE detection` — 5,140 images (Multi-class industrial inspection)[cite: 35]
-3. `safety-boots` — 4,896 images (Footwear protection)[cite: 35]
-4. `vest` — 3,764 images (High-visibility clothing)[cite: 35]
-5. `Safety Gloves` — 3,373 images (Hand protection)[cite: 35]
-6. `VEST` — 2,127 images (Reflective safety gear)[cite: 35]
-7. `PPE DETECTION` — 2,114 images (Site compliance monitoring)[cite: 35]
-8. `glasses-ppe` — 638 images (Eye/Goggles protection)[cite: 35]
+1. `Hard-Hats` — 7,035 images (Head protection)
+2. `PPE detection` — 5,140 images (Multi-class industrial inspection)
+3. `safety-boots` — 4,896 images (Footwear protection)
+4. `vest` — 3,764 images (High-visibility clothing)
+5. `Safety Gloves` — 3,373 images (Hand protection)
+6. `VEST` — 2,127 images (Reflective safety gear)
+7. `PPE DETECTION` — 2,114 images (Site compliance monitoring)
+8. `glasses-ppe` — 638 images (Eye/Goggles protection)
 
 * **Target Classes (5 primary OSH classes):**
   1. `helmet` (Safety Helmet / Hardhat)
@@ -104,6 +111,7 @@ pip install -r requirements.txt
 
 # 3. Launch local Streamlit interface
 streamlit run app.py
+
 ```
 
 ---
@@ -115,13 +123,10 @@ streamlit run app.py
 * **Portfolio:** [marketableplushiee.github.io/Portafolio](https://marketableplushiee.github.io/Portafolio/)
 
 ---
+
 ---
 
 ## 🇪🇸 Sistema de Auditoría y Monitoreo de EPP (YOLOv8) - Español
-
-[![Streamlit App](https://img.shields.io/badge/Streamlit-Live%20Demo-red?style=for-the-badge&logo=streamlit)](https://yolov8-safety-equipment-detection-qsj9ufsc4gezwsv7v3t9ms.streamlit.app/)
-[![Python](https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge&logo=python)](https://www.python.org/)
-[![YOLOv8](https://img.shields.io/badge/YOLOv8-Medium-orange?style=for-the-badge&logo=ultralytics)](https://ultralytics.com/)
 
 Aplicación web para la detección automatizada de Equipos de Protección Personal (EPP) y auditoría de cumplimiento en Seguridad y Salud en el Trabajo (SST). Utiliza el modelo **YOLOv8 Medium** ajustado para visión por computadora en entornos industriales.
 
@@ -129,31 +134,36 @@ Aplicación web para la detección automatizada de Equipos de Protección Person
 
 ### 📋 1. Documentación del Dataset y Consolidación
 
-El modelo fue entrenado utilizando un dataset masivo denominado **`ppe-master`**, que reúne **29,087 imágenes anotadas**[cite: 34, 35]. Este conjunto fue construido consolidando y estandarizando 8 sub-proyectos especializados de seguridad laboral alojados en Roboflow Universe[cite: 35].
+El modelo fue entrenado utilizando un dataset masivo denominado **`ppe-master`**, que reúne **29,087 imágenes anotadas**. Este conjunto fue construido consolidando y estandarizando 8 sub-proyectos especializados de seguridad laboral alojados en Roboflow Universe.
 
-* **Nombre del Dataset Maestro:** `ppe-master` (Versión 1)[cite: 34, 35]
-* **Total de imágenes:** 29,087 fotografías anotadas[cite: 34, 35]
+* **Nombre del Dataset Maestro:** `ppe-master` (Versión 1)
+* **Total de imágenes:** 29,087 fotografías anotadas
 * **División del Dataset:**
-  * **Entrenamiento (Train):** 72% (20,918 imágenes)[cite: 34]
-  * **Validación (Val):** 15% (4,347 imágenes)[cite: 34]
-  * **Prueba (Test):** 13% (3,822 imágenes)[cite: 34]
+* **Entrenamiento (Train):** 72% (20,918 imágenes)
+* **Validación (Val):** 15% (4,347 imágenes)
+* **Prueba (Test):** 13% (3,822 imágenes)
+
+
 
 #### Sub-Proyectos Integrados
-1. `Hard-Hats` — 7,035 imágenes (Protección de cabeza)[cite: 35]
-2. `PPE detection` — 5,140 imágenes (Inspección industrial multiclase)[cite: 35]
-3. `safety-boots` — 4,896 imágenes (Calzado de seguridad)[cite: 35]
-4. `vest` — 3,764 imágenes (Vestimenta de alta visibilidad)[cite: 35]
-5. `Safety Gloves` — 3,373 imágenes (Protección de manos)[cite: 35]
-6. `VEST` — 2,127 imágenes (Indumentaria reflectante)[cite: 35]
-7. `PPE DETECTION` — 2,114 imágenes (Monitoreo de cumplimiento en obra)[cite: 35]
-8. `glasses-ppe` — 638 imágenes (Protección ocular / Antiparras)[cite: 35]
+
+1. `Hard-Hats` — 7,035 imágenes (Protección de cabeza)
+2. `PPE detection` — 5,140 imágenes (Inspección industrial multiclase)
+3. `safety-boots` — 4,896 imágenes (Calzado de seguridad)
+4. `vest` — 3,764 imágenes (Vestimenta de alta visibilidad)
+5. `Safety Gloves` — 3,373 imágenes (Protección de manos)
+6. `VEST` — 2,127 imágenes (Indumentaria reflectante)
+7. `PPE DETECTION` — 2,114 imágenes (Monitoreo de cumplimiento en obra)
+8. `glasses-ppe` — 638 imágenes (Protección ocular / Antiparras)
 
 * **Clases objetivo (5 clases SST principales):**
-  1. `helmet` (Casco de seguridad)
-  2. `vest` (Chaleco reflectante)
-  3. `boots` (Calzado de seguridad)
-  4. `gloves` (Guantes de protección)
-  5. `goggles` (Gafas / Antiparras de protección)
+1. `helmet` (Casco de seguridad)
+2. `vest` (Chaleco reflectante)
+3. `boots` (Calzado de seguridad)
+4. `gloves` (Guantes de protección)
+5. `goggles` (Gafas / Antiparras de protección)
+
+
 
 ---
 
@@ -167,6 +177,7 @@ El sistema procesa las imágenes mediante la siguiente canalización:
 4. **Sensibilidad Adaptativa:** Ajuste dinámico de umbrales por imagen según la distribución de puntajes de confianza máximos para equilibrar el recall en accesorios pequeños (`boots`, `gloves`, `goggles`).
 
 #### ⚠️ Limitaciones Técnicas y Casos de Falla
+
 * **Oclusión parcial o severa:** Pérdida de detección cuando el chaleco o casco se encuentra cubierto por maquinaria u objetos en más de un 60%.
 * **Baja iluminación:** Reducción en la tasa de detección (recall) en tomas nocturnas o espacios subterráneos sin luz directa.
 * **Objetos sub-15px:** Detección limitada en elementos muy pequeños (como gafas o guantes) cuando la resolución efectiva del objeto cae por debajo de los 15 píxeles en la toma.
@@ -178,13 +189,14 @@ El sistema procesa las imágenes mediante la siguiente canalización:
 Resultados obtenidos en la evaluación del conjunto de prueba (`results.csv` tras 50 épocas de entrenamiento):
 
 | Métrica General | Valor Cuantitativo |
-| :--- | :--- |
+| --- | --- |
 | **mAP@50** | **75.1%** (0.751) |
 | **mAP@50-95** | **48.0%** (0.480) |
 | **Recall (Exhaustividad)** | **75.6%** (0.756) |
 | **Precision (Precisión)** | **68.1%** (0.681) |
 
 #### Rendimiento Detallado por Clase (mAP@50)
+
 * **Cascos (`helmet`):** 88.0% mAP@50
 * **Chalecos (`vest`):** 84.0% mAP@50
 * **Botas (`boots`):** 72.0% mAP@50
@@ -192,6 +204,7 @@ Resultados obtenidos en la evaluación del conjunto de prueba (`results.csv` tra
 * **Gafas (`goggles`):** 64.0% mAP@50
 
 #### 📈 Gráficos de Evaluación
+
 * **Convergencia de Pérdidas (`results.png`):** Disminución sostenida de la pérdida de caja (*box loss*) de 1.62 a 0.93 en 50 épocas sin evidencia de sobreajuste.
 * **Curva Precision-Recall (`BoxPR_curve.png`):** Desempeño destacado en las clases de mayor volumen espacial (cascos y chalecos).
 * **Matriz de Confusión (`confusion_matrix.png`):** Alta concentración de verdaderos positivos en la diagonal principal; confusión residual ubicada en guantes pequeños frente al fondo.
@@ -217,6 +230,7 @@ pip install -r requirements.txt
 
 # 3. Ejecutar la aplicación web en local
 streamlit run app.py
+
 ```
 
 ---
@@ -226,3 +240,7 @@ streamlit run app.py
 * **Ivan Latrille Brito** — Estudiante de Ingeniería en Realidad Virtual y Diseño de Juegos Digitales, Universidad Bernardo O'Higgins.
 * **Aplicación Desplegada:** [Streamlit Cloud Demo](https://yolov8-safety-equipment-detection-qsj9ufsc4gezwsv7v3t9ms.streamlit.app/)
 * **Portafolio Web:** [marketableplushiee.github.io/Portafolio](https://marketableplushiee.github.io/Portafolio/)
+
+```
+
+```
