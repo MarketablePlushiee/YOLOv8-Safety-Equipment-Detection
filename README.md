@@ -42,6 +42,8 @@ The model was trained on a large-scale master dataset named **`ppe-master`**, co
   4. `gloves` (Protective Gloves)
   5. `goggles` (Safety Goggles / Glasses)
 
+![Dataset Label Distribution](labels.jpg)
+
 ---
 
 ### ⚙️ 2. Architecture & OSH Compliance Logic
@@ -79,8 +81,14 @@ Results evaluated on the test dataset (`results.csv` after 50 training epochs):
 * **Goggles (`goggles`):** 64.0% mAP@50
 
 #### 📈 Training & Evaluation Plots
+
+![Loss Convergence](results.png)
 * **Loss Convergence (`results.png`):** Steady decrease in bounding box loss (*box loss*) from 1.62 down to 0.93 across 50 epochs without signs of overfitting.
+
+![Precision-Recall Curve](BoxPR_curve.png)
 * **Precision-Recall Curve (`BoxPR_curve.png`):** High precision sustained across primary spatial classes (helmets and vests).
+
+![Confusion Matrix](confusion_matrix.png)
 * **Confusion Matrix (`confusion_matrix.png`):** Strong diagonal concentration of true positives; minor background false positives confined to small gloves.
 
 ---
@@ -155,6 +163,8 @@ El modelo fue entrenado utilizando un dataset masivo denominado **`ppe-master`**
   4. `gloves` (Guantes de protección)
   5. `goggles` (Gafas / Antiparras de protección)
 
+![Distribución de Clases](labels.jpg)
+
 ---
 
 ### ⚙️ 2. Arquitectura y Lógica de Cumplimiento SST
@@ -192,8 +202,14 @@ Resultados obtenidos en la evaluación del conjunto de prueba (`results.csv` tra
 * **Gafas (`goggles`):** 64.0% mAP@50
 
 #### 📈 Gráficos de Evaluación
-* **Convergencia de Pérdidas (`results.png`):** Disminución sostenida de la pérdida de caja (*box loss*) de 1.62 a 0.93 en 50 épocas sin evidencia de sobreajuste.
+
+![Convergencia de Pérdidas](results.png)
+* **Convergencia de Pérdidas (`results.png`):** Disminución sustained de la pérdida de caja (*box loss*) de 1.62 a 0.93 en 50 épocas sin evidencia de sobreajuste.
+
+![Curva Precision-Recall](BoxPR_curve.png)
 * **Curva Precision-Recall (`BoxPR_curve.png`):** Desempeño destacado en las clases de mayor volumen espacial (cascos y chalecos).
+
+![Matriz de Confusión](confusion_matrix.png)
 * **Matriz de Confusión (`confusion_matrix.png`):** Alta concentración de verdaderos positivos en la diagonal principal; confusión residual ubicada en guantes pequeños frente al fondo.
 
 ---
